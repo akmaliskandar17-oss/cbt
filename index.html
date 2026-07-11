@@ -274,7 +274,7 @@
                     </div>
 
                     <div class="mb-6">
-                        <h2 class="text-2xl font-extrabold text-slate-950 dark:text-white">SMKN 3 Kepulauan Selayar</h2>
+                        <h2 class="text-2xl font-extrabold text-slate-950 dark:text-white">SMKN 3 KEPULAUAN SELAYAR</h2>
                         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Silakan masuk menggunakan akun Anda.</p>
                     </div>
 
@@ -1004,7 +1004,7 @@
                 ? "px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-600 dark:bg-blue-955/40 dark:text-blue-400"
                 : "px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-slate-100 dark:bg-slate-800 dark:text-slate-300";
             
-            document.getElementById('aside-panel-type').textContent = isStudent ? "Ruang Siswa" : "Panel Administrator";
+            document.getElementById('aside-panel-type').textContent = isStudent ? "Ruang Siswa" : "Panel Admin";
 
             const menuStructure = isStudent ? [
                 { id: 's-exams', icon: 'book-open', text: 'Daftar Ujian', action: 'renderStudentExams()' },
@@ -1012,7 +1012,7 @@
             ] : [
                 { id: 'a-dashboard', icon: 'layout-dashboard', text: 'Dashboard', action: 'renderAdminDashboard()' },
                 { id: 'a-students', icon: 'users', text: 'Kelola Siswa', action: 'renderAdminStudents()' },
-                { id: 'a-exams', icon: 'file-text', text: 'Sesi & Bank Soal', action: 'renderAdminExams()' },
+                { id: 'a-exams', icon: 'file-text', text: 'Setting Ujian', action: 'renderAdminExams()' },
                 { id: 'a-results', icon: 'trophy', text: 'Hasil Ujian', action: 'renderAdminResults()' },
                 { id: 'a-gallery', icon: 'image', text: 'Galeri Media', action: 'renderAdminGallery()' },
                 { id: 'a-cleanup', icon: 'database', text: 'Bersihkan Data', action: 'renderAdminCleanup()' }
@@ -1535,7 +1535,7 @@
         };
 
         window.renderAdminExams = async function() {
-            document.getElementById('header-view-title').textContent = "Sesi & Bank Soal";
+            document.getElementById('header-view-title').textContent = "Setting Ujian";
             const exams = await getRecords('exams');
             
             const listHtml = exams.map(e => `
@@ -1569,7 +1569,7 @@
                         </div>
                         <div class="grid grid-cols-3 gap-1.5">
                             <button onclick="toggleExamStatus('${e.id}', ${!e.is_active})" class="py-2 px-1 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-[10px] font-bold rounded-xl transition-all flex items-center justify-center gap-1" title="Aktif/Matikan">
-                                <i data-lucide="power" class="w-3.5 h-3.5"></i> ${e.is_active ? 'Non Aktifkan' : 'Aktifkan'}
+                                <i data-lucide="power" class="w-3.5 h-3.5"></i> ${e.is_active ? 'Matikan' : 'Aktifkan'}
                             </button>
                             <button onclick="startEditExam('${e.id}')" class="py-2 px-1 border border-blue-100 dark:border-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-955/20 text-[10px] font-bold rounded-xl transition-all flex items-center justify-center gap-1" title="Ubah Detail Sesi">
                                 <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Edit
@@ -1618,11 +1618,11 @@
                                 <input type="number" id="add-durasi" required placeholder="60" value="${currentEditData.durasi_menit}" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-800 text-sm font-semibold dark:bg-slate-800 dark:border-slate-700 dark:text-white">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Waktu Mulai Tes</label>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Waktu Mulai</label>
                                 <input type="datetime-local" id="add-waktu-mulai" required value="${currentEditData.waktu_mulai}" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-800 text-sm font-semibold dark:bg-slate-800 dark:border-slate-700 dark:text-white">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Waktu Selesai Tes (Opsional)</label>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Waktu Selesai (Opsional)</label>
                                 <input type="datetime-local" id="add-waktu-selesai" value="${currentEditData.waktu_selesai || ''}" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-800 text-sm font-semibold dark:bg-slate-800 dark:border-slate-700 dark:text-white">
                             </div>
                             <button type="submit" class="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md shadow-blue-500/10">
@@ -2460,7 +2460,7 @@
                             <i data-lucide="database" class="w-5 h-5"></i>
                         </div>
                         <div>
-                            <h3 class="font-extrabold text-lg text-slate-900 dark:text-white">Reset Database Hasil Ujian</h3>
+                            <h3 class="font-extrabold text-lg text-slate-900 dark:text-white">Reset Database</h3>
                             <p class="text-xs text-slate-400 dark:text-slate-400 font-semibold mt-1">Bersihkan database rekam jejak pengerjaan ujian siswa yang telah dilaksanakan untuk mengosongkan kapasitas memori cloud.</p>
                         </div>
                     </div>

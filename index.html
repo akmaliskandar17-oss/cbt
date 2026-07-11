@@ -246,7 +246,7 @@
                             <i data-lucide="info" class="w-5 h-5"></i>
                         </div>
                         <div>
-                            <p class="text-[10px] text-blue-200 font-bold uppercase tracking-wider">Info Sistem</p>
+                            <p class="text-[10px] text-blue-200 font-bold uppercase tracking-wider">Info Aplikasi</p>
                             <div class="mt-1 text-xs text-white space-y-0.5 font-medium">
                                 <div>Versi: <span id="login-app-version" class="text-blue-200 font-bold">v1.0.0-Live</span></div>
                                 <div>Pembuat: <span id="login-app-creator" class="text-blue-200 font-bold">Akmal Iskandar, S.Pi (Gemini AI)</span></div>
@@ -284,7 +284,7 @@
                             <i data-lucide="user" class="w-4 h-4"></i> Siswa
                         </button>
                         <button onclick="switchLoginTab('admin')" id="tab-btn-admin" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-800 dark:hover:text-slate-300">
-                            <i data-lucide="shield-alert" class="w-4 h-4"></i> Admin / Guru
+                            <i data-lucide="shield-alert" class="w-4 h-4"></i> Admin
                         </button>
                     </div>
 
@@ -316,12 +316,12 @@
                     <!-- Admin Login Box -->
                     <form id="form-login-admin" onsubmit="handleAdminLogin(event)" class="space-y-4 hidden">
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Email Administrator</label>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Email Admin</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                                     <i data-lucide="mail" class="w-5 h-5"></i>
                                 </span>
-                                <input type="email" id="admin-email-input" placeholder="Khusus Guru" class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-800 text-sm font-semibold dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                <input type="email" id="admin-email-input" placeholder="Khusus Admin" class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-800 text-sm font-semibold dark:bg-slate-800 dark:border-slate-700 dark:text-white">
                             </div>
                         </div>
                         <div>
@@ -644,7 +644,7 @@
                 const configs = await getRecords('app_config');
                 let config = configs[0];
                 if (!config) {
-                    config = { id: "cfg_01", versi: "v2.1.0-Live", pembuat: "Webapp Builder - FIREBASE" };
+                    config = { id: "cfg_01", versi: "v1.5.0-Live", pembuat: "Akmal Iskandar, S.Pi (Gemini AI)" };
                     // Hanya inisialisasi penulisan default ke cloud jika user aktif adalah Admin yang sah
                     if (!IS_PREVIEW && auth && auth.currentUser) {
                         try {
@@ -968,7 +968,7 @@
                     // PROSES SEEDING DATABASE OTOMATIS BERJALAN SAAT ADMIN BERHASIL MASUK
                     await autoSetupDatabase();
                     
-                    showToast("Autentikasi Sukses", "Selamat datang Administrator.", "success");
+                    showToast("Autentikasi Sukses", "Selamat datang Admin.", "success");
                     setupMainMenu();
                     switchView('view-main');
                 } catch (err) {

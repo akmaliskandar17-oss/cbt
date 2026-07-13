@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CBT Ujian Sekolah Online</title>
     
-    <!-- Tailwind CSS for modern utility styling -->
+    <!-- Tailwind CSS untuk penataan utilitas modern -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons for high quality modern UI icons -->
+    <!-- Lucide Icons untuk ikon UI modern berkualitas tinggi -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- SheetJS Library for Client-side Excel parsing & dynamic template generation -->
+    <!-- SheetJS Library untuk parsing Excel di sisi klien & pembuatan templat dinamis -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- jsPDF and AutoTable for dynamic PDF report generation -->
+    <!-- jsPDF dan AutoTable untuk pembuatan laporan PDF dinamis -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
     
-    <!-- Dynamic Manifest Placeholder for PWA -->
+    <!-- Dynamic Manifest Placeholder untuk PWA -->
     <link id="pwa-manifest" rel="manifest">
 
     <script>
@@ -34,7 +34,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* Modern Scrollbar customization */
+        /* Kustomisasi Scrollbar Modern */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -57,7 +57,7 @@
             display: none !important;
         }
 
-        /* Dark Mode Core Variable Overrides */
+        /* Overrides Inti untuk Tema Gelap */
         html.dark body {
             background-color: #0f172a !important;
             color: #f1f5f9 !important;
@@ -133,7 +133,7 @@
             background-color: #334155 !important;
         }
 
-        /* Glassmorphism utility card */
+        /* Utilitas Glassmorphism */
         .glass-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -142,12 +142,12 @@
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
         }
 
-        /* Custom active state shadows */
+        /* Transisi Kartu Opsi */
         .option-card-transition {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Custom Full-page override specifically for Blogger integrations */
+        /* Wadah Khusus untuk Integrasi Blogger */
         #cbt-blogger-container {
             position: fixed;
             top: 0;
@@ -162,7 +162,7 @@
             flex-direction: column;
         }
 
-        /* Responsive Navigation Layout Rules */
+        /* Aturan Tata Letak Navigasi Responsif */
         @media (min-width: 768px) {
             .nav-sidebar {
                 display: flex !important;
@@ -215,6 +215,33 @@
             </div>
         </div>
 
+        <!-- Anti-Cheating Warning Overlay -->
+        <div id="anti-cheat-overlay" class="fixed inset-0 z-[1000001] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4 hidden">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full shadow-2xl p-6 text-center border border-rose-100 dark:border-rose-900/30">
+                <div class="w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-955/40 text-rose-600 flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="shield-alert" class="w-8 h-8 animate-bounce"></i>
+                </div>
+                <h3 class="text-xl font-extrabold text-rose-600 dark:text-rose-400">Peringatan Keras Keamanan!</h3>
+                <p class="text-slate-500 dark:text-slate-350 text-sm mt-3 leading-relaxed">
+                    Anda terdeteksi meninggalkan layar ujian (berpindah tab/aplikasi/menutup layar). 
+                    Kejadian ini dicatat oleh pengawas sebagai indikasi kecurangan.
+                </p>
+                <div class="mt-4 p-3 bg-rose-50 dark:bg-rose-955/20 rounded-2xl border border-rose-100 dark:border-rose-900/25">
+                    <p class="text-xs font-bold text-rose-700 dark:text-rose-300">
+                        Total Pelanggaran: <span id="cheat-violation-count" class="text-base font-extrabold">0</span> / <span id="cheat-max-count">3</span>
+                    </p>
+                </div>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-3 font-semibold">
+                    *Ujian Anda akan otomatis dikunci dan dikirim jika batas pelanggaran terlampaui.
+                </p>
+                <div class="flex justify-center mt-6">
+                    <button onclick="resumeExamFromCheatWarning()" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition-all shadow-lg shadow-blue-500/20">
+                        Saya Mengerti, Kembali Ujian
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- View Halaman Login -->
         <div id="view-login" class="min-h-screen flex flex-col md:flex-row items-stretch justify-center h-full w-full bg-slate-50 relative">
             <!-- Floating Theme Toggle in Login page -->
@@ -234,7 +261,7 @@
                     <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
                         <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
                     </div>
-                    <span class="font-extrabold text-xl tracking-wide uppercase">CBT Online</span>
+                    <span class="font-extrabold text-xl tracking-wide uppercase">AIS CBT</span>
                 </div>
                 <div class="relative z-10 my-auto">
                     <h1 class="text-4xl font-extrabold leading-tight">Sistem Asesmen Sekolah Mandiri Modern & Real-Time</h1>
@@ -274,7 +301,7 @@
                     </div>
 
                     <div class="mb-6">
-                        <h2 class="text-2xl font-extrabold text-slate-950 dark:text-white">SMKN 3 SELAYAR</h2>
+                        <h2 class="text-2xl font-extrabold text-slate-950 dark:text-white">UJIAN ONLINE</h2>
                         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Silakan masuk menggunakan akun Anda.</p>
                     </div>
 
@@ -305,7 +332,10 @@
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                                     <i data-lucide="lock" class="w-5 h-5"></i>
                                 </span>
-                                <input type="password" id="student-pass-input" required placeholder="••••••••" class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-800 text-sm font-semibold dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                <input type="password" id="student-pass-input" required placeholder="••••••••" class="w-full pl-11 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-800 text-sm font-semibold dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                <button type="button" onclick="togglePasswordVisibility('student-pass-input', 'toggle-student-pass-icon')" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center">
+                                    <i id="toggle-student-pass-icon" data-lucide="eye" class="w-5 h-5"></i>
+                                </button>
                             </div>
                         </div>
                         <button type="submit" class="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98] flex items-center justify-center gap-2">
@@ -330,7 +360,10 @@
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                                     <i data-lucide="lock" class="w-5 h-5"></i>
                                 </span>
-                                <input type="password" id="admin-pass-input" placeholder="••••••••" class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-800 text-sm font-semibold dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                <input type="password" id="admin-pass-input" placeholder="••••••••" class="w-full pl-11 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-800 text-sm font-semibold dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                <button type="button" onclick="togglePasswordVisibility('admin-pass-input', 'toggle-admin-pass-icon')" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-650 transition-colors flex items-center justify-center">
+                                    <i id="toggle-admin-pass-icon" data-lucide="eye" class="w-5 h-5"></i>
+                                </button>
                             </div>
                         </div>
                         <button type="submit" class="w-full py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-slate-900/10 active:scale-[0.98] flex items-center justify-center gap-2 dark:bg-slate-800 dark:hover:bg-slate-750">
@@ -400,7 +433,7 @@
         </div>
 
         <!-- View Halaman Ruang Ujian (Siswa Only) -->
-        <div id="view-exam" class="hidden flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950 overflow-hidden">
+        <div id="view-exam" class="hidden flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-955 overflow-hidden">
             <!-- Exam Room Header -->
             <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-850 px-6 py-4 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between z-10 shadow-sm shrink-0">
                 <div class="flex items-center gap-3">
@@ -511,7 +544,7 @@
         import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         // APP CONFIGURATIONS & DEPLOYMENT SWITCH
-        const IS_PREVIEW = false; // SET FALSE JIKA SUDAH TERHUBUNG KE REAL FIREBASE
+        const IS_PREVIEW = FALSE; // SET FALSE JIKA SUDAH TERHUBUNG KE REAL FIREBASE
         
         const firebaseConfig = {
             apiKey: "AIzaSyCg_iznsQaDRvn28c9IunJUztR7_CvOczA",
@@ -537,6 +570,21 @@
             }
         };
 
+        window.togglePasswordVisibility = function(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input && icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.setAttribute('data-lucide', 'eye-off');
+                } else {
+                    input.type = 'password';
+                    icon.setAttribute('data-lucide', 'eye');
+                }
+                lucide.createIcons();
+            }
+        };
+
         // Terapkan tema instan sebelum load untuk mencegah flash warna putih
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -558,8 +606,8 @@
                 { id: "std_03", nisn: "67890", nama: "Budi Pratama", kelas: "XII IPA 2", password: "123" }
             ],
             exams: [
-                { id: "exm_01", mata_pelajaran: "Matematika Dasar Terapan", durasi_menit: 45, waktu_mulai: "2026-07-11T08:00", waktu_selesai: "2026-07-15T23:59", is_active: true },
-                { id: "exm_02", mata_pelajaran: "Fisika Komputasi", durasi_menit: 60, waktu_mulai: "2026-07-12T10:00", waktu_selesai: "2026-07-16T23:59", is_active: true }
+                { id: "exm_01", mata_pelajaran: "Matematika Dasar Terapan", durasi_menit: 45, waktu_mulai: "2026-07-11T08:00", waktu_selesai: "2026-07-20T23:59", is_active: true },
+                { id: "exm_02", mata_pelajaran: "Fisika Komputasi", durasi_menit: 60, waktu_mulai: "2026-07-12T10:00", waktu_selesai: "2026-07-22T23:59", is_active: true }
             ],
             questions: [
                 { id: "qst_01", id_ujian: "exm_01", teks_soal: "Berapa hasil turunan dari f(x) = 3x^2 + 5x - 7 pada x = 2?", opsi: ["11", "17", "12", "15", "19"], jawaban_benar: 1, gambar: "" },
@@ -574,7 +622,7 @@
                 { id: "sts_01", nisn: "12345", status: "online", examId: null, last_seen: "2026-07-11T22:30:00.000Z" }
             ],
             app_config: [
-                { id: "cfg_01", versi: "v1.0.0-Live", pembuat: "Akmal Iskandar, S.Pi (Gemini AI)" }
+                { id: "cfg_01", versi: "v1.0.0-Live", pembuat: "Akmal Iskandar, S.Pi (Gemini AI)", max_violations: 3, block_copy_paste: true, block_right_click: true, enforce_fullscreen: true, auto_submit: true }
             ]
         };
 
@@ -589,6 +637,13 @@
             editingExamId: null,     // Menyimpan ID ujian yang sedang diedit
             tempQuestionImage: "",   // Menyimpan string Base64 gambar soal sementara
             appConfig: null,         // Menyimpan konfigurasi info aplikasi yang aktif
+            antiCheatSettings: {     // Menyimpan konfigurasi aktif fitur anti-cheat
+                max_violations: 3,
+                block_copy_paste: true,
+                block_right_click: true,
+                enforce_fullscreen: true,
+                auto_submit: true
+            },
             examEngine: {
                 activeExam: null,
                 questions: [],
@@ -597,7 +652,10 @@
                 currentIdx: 0,
                 timerVal: 0,
                 timerId: null,
-                fontSizePercent: 100 // Menyimpan persentase ukuran huruf soal
+                fontSizePercent: 100, // Menyimpan persentase ukuran huruf soal
+                violations: 0,        // Menyimpan jumlah pelanggaran tab/blur
+                maxViolations: 3,     // Batas maksimal pelanggaran
+                antiCheatListenersActive: false // Status keaktifan sistem pengaman
             }
         };
 
@@ -638,13 +696,146 @@
             }
         };
 
+        function blockDefaultEvent(e) {
+            e.preventDefault();
+            showToast("Aksi Dilarang", "Fitur salin, tempel, dan klik kanan dimatikan demi menjaga integritas ujian!", "error");
+        }
+
+        function preventKeys(e) {
+            const forbiddenKeys = ['F12', 'u', 'i', 's', 'p', 'c', 'v'];
+            const settings = appState.antiCheatSettings || { block_copy_paste: true };
+            if (e.key === 'F12' || (e.ctrlKey && forbiddenKeys.includes(e.key.toLowerCase()))) {
+                if ((e.key.toLowerCase() === 'c' || e.key.toLowerCase() === 'v' || e.key.toLowerCase() === 'x') && !settings.block_copy_paste) {
+                    return; // Izinkan menyalin jika fitur dinonaktifkan pengawas
+                }
+                e.preventDefault();
+                showToast("Pintasan Dilarang", "Pintasan keyboard dinonaktifkan selama ujian berlangsung!", "error");
+            }
+        }
+
+        let blurTimeout = null;
+        function handleVisibilityOrBlur() {
+            if (blurTimeout) clearTimeout(blurTimeout);
+            blurTimeout = setTimeout(() => {
+                const engine = appState.examEngine;
+                if (!engine.activeExam || !engine.antiCheatListenersActive) return;
+
+                if (document.hidden || !document.hasFocus()) {
+                    engine.violations++;
+                    document.getElementById('cheat-violation-count').textContent = engine.violations;
+                    document.getElementById('cheat-max-count').textContent = engine.maxViolations;
+                    
+                    document.getElementById('anti-cheat-overlay').classList.remove('hidden');
+                    showToast("Pelanggaran Keamanan", `Perpindahan layar terdeteksi! (${engine.violations}/${engine.maxViolations})`, "error");
+
+                    updateStudentStatus(appState.currentUser.data.nisn, `violating_${engine.violations}`, engine.activeExam.id);
+
+                    const settings = appState.antiCheatSettings || { auto_submit: true };
+                    if (engine.violations >= engine.maxViolations) {
+                        if (settings.auto_submit) {
+                            window.disableAntiCheat();
+                            showToast("Ujian Dikunci", "Pelanggaran melewati batas maksimal! Jawaban Anda dikirim secara otomatis.", "error");
+                            setTimeout(() => {
+                                submitExamResults(true);
+                            }, 1500);
+                        } else {
+                            showToast("Peringatan Keras", "Anda telah melampaui batas pelanggaran maksimal! Aktivitas ini terekam di sistem.", "error");
+                        }
+                    }
+                }
+            }, 200);
+        }
+
+        function requestFullscreenExam() {
+            const docEl = document.documentElement;
+            if (docEl.requestFullscreen) {
+                docEl.requestFullscreen().catch(() => {});
+            } else if (docEl.webkitRequestFullscreen) {
+                docEl.webkitRequestFullscreen().catch(() => {});
+            } else if (docEl.msRequestFullscreen) {
+                docEl.msRequestFullscreen().catch(() => {});
+            }
+        }
+
+        function handleFullscreenChange() {
+            const settings = appState.antiCheatSettings || { enforce_fullscreen: true };
+            if (!document.fullscreenElement && appState.examEngine.antiCheatListenersActive && settings.enforce_fullscreen) {
+                showToast("Fullscreen Dibutuhkan", "Harap tetap berada dalam mode Layar Penuh (Fullscreen) selama ujian!", "error");
+            }
+        }
+
+        window.enableAntiCheat = function() {
+            if (appState.examEngine.antiCheatListenersActive) return;
+
+            const settings = appState.antiCheatSettings || {
+                block_copy_paste: true,
+                block_right_click: true,
+                enforce_fullscreen: true
+            };
+
+            if (settings.block_right_click) {
+                document.addEventListener('contextmenu', blockDefaultEvent);
+            }
+            if (settings.block_copy_paste) {
+                document.addEventListener('copy', blockDefaultEvent);
+                document.addEventListener('paste', blockDefaultEvent);
+                document.addEventListener('cut', blockDefaultEvent);
+            }
+            document.addEventListener('keydown', preventKeys);
+
+            document.addEventListener('visibilitychange', handleVisibilityOrBlur);
+            window.addEventListener('blur', handleVisibilityOrBlur);
+
+            if (settings.enforce_fullscreen) {
+                requestFullscreenExam();
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+            }
+
+            appState.examEngine.antiCheatListenersActive = true;
+        };
+
+        window.disableAntiCheat = function() {
+            document.removeEventListener('contextmenu', blockDefaultEvent);
+            document.removeEventListener('copy', blockDefaultEvent);
+            document.removeEventListener('paste', blockDefaultEvent);
+            document.removeEventListener('cut', blockDefaultEvent);
+            document.removeEventListener('keydown', preventKeys);
+            document.removeEventListener('visibilitychange', handleVisibilityOrBlur);
+            window.removeEventListener('blur', handleVisibilityOrBlur);
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+            }
+
+            appState.examEngine.antiCheatListenersActive = false;
+            document.getElementById('anti-cheat-overlay').classList.add('hidden');
+        };
+
+        window.resumeExamFromCheatWarning = function() {
+            document.getElementById('anti-cheat-overlay').classList.add('hidden');
+            const settings = appState.antiCheatSettings || { enforce_fullscreen: true };
+            if (settings.enforce_fullscreen) {
+                requestFullscreenExam();
+            }
+        };
+
         // MEMUAT KONFIGURASI SECARA AMAN (Tamu/Siswa membaca fallback tanpa memaksa penulisan cloud kosong)
         window.loadAppConfig = async function() {
             try {
                 const configs = await getRecords('app_config');
                 let config = configs[0];
                 if (!config) {
-                    config = { id: "cfg_01", versi: "v1.5.0-Live", pembuat: "Akmal Iskandar, S.Pi (Gemini AI)" };
+                    config = { 
+                        id: "cfg_01", 
+                        versi: "v1.0.0-Live", 
+                        pembuat: "Akmal Iskandar, S.Pi (Gemini AI)",
+                        max_violations: 3,
+                        block_copy_paste: true,
+                        block_right_click: true,
+                        enforce_fullscreen: true,
+                        auto_submit: true
+                    };
                     // Hanya inisialisasi penulisan default ke cloud jika user aktif adalah Admin yang sah
                     if (!IS_PREVIEW && auth && auth.currentUser) {
                         try {
@@ -667,6 +858,16 @@
                 if (creElMob) creElMob.textContent = config.pembuat;
                 
                 appState.appConfig = config;
+
+                // Muat konfigurasi anti-cheat global
+                appState.antiCheatSettings = {
+                    max_violations: config.max_violations !== undefined ? Number(config.max_violations) : 3,
+                    block_copy_paste: config.block_copy_paste !== undefined ? (config.block_copy_paste === true || config.block_copy_paste === "true") : true,
+                    block_right_click: config.block_right_click !== undefined ? (config.block_right_click === true || config.block_right_click === "true") : true,
+                    enforce_fullscreen: config.enforce_fullscreen !== undefined ? (config.enforce_fullscreen === true || config.enforce_fullscreen === "true") : true,
+                    auto_submit: config.auto_submit !== undefined ? (config.auto_submit === true || config.auto_submit === "true") : true
+                };
+                appState.examEngine.maxViolations = appState.antiCheatSettings.max_violations;
             } catch (err) {
                 console.error("Gagal memuat konfigurasi identitas aplikasi:", err);
             }
@@ -1015,7 +1216,8 @@
                 { id: 'a-exams', icon: 'file-text', text: 'Setting Ujian', action: 'renderAdminExams()' },
                 { id: 'a-results', icon: 'trophy', text: 'Hasil Ujian', action: 'renderAdminResults()' },
                 { id: 'a-gallery', icon: 'image', text: 'Galeri Media', action: 'renderAdminGallery()' },
-                { id: 'a-cleanup', icon: 'database', text: 'Bersihkan Data', action: 'renderAdminCleanup()' }
+                { id: 'a-cleanup', icon: 'database', text: 'Bersihkan Data', action: 'renderAdminCleanup()' },
+                { id: 'a-settings', icon: 'shield', text: 'Keamanan CBT', action: 'renderAdminSettings()' }
             ];
 
             // Render Navbars Desktop
@@ -1560,10 +1762,10 @@
 
                     <div class="flex flex-col gap-2 mt-6 border-t border-slate-100 dark:border-slate-800/80 pt-4">
                         <div class="grid grid-cols-2 gap-2">
-                            <button onclick="manageQuestions('${e.id}', '${e.mata_pelajaran}')" class="py-2.5 px-3 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 dark:bg-blue-955/40 dark:text-blue-400 dark:hover:bg-blue-900/40">
+                            <button onclick="manageQuestions('${e.id}', '${e.mata_pelajaran.replace(/'/g, "\\'")}')" class="py-2.5 px-3 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 dark:bg-blue-955/40 dark:text-blue-400 dark:hover:bg-blue-900/40">
                                 <i data-lucide="book-open" class="w-4 h-4"></i> Bank Soal
                             </button>
-                            <button onclick="renderStudentMonitor('${e.id}', '${e.mata_pelajaran}')" class="py-2.5 px-3 bg-purple-50 hover:bg-purple-100 text-purple-600 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 dark:bg-purple-950/40 dark:text-purple-400 dark:hover:bg-purple-900/40">
+                            <button onclick="renderStudentMonitor('${e.id}', '${e.mata_pelajaran.replace(/'/g, "\\'")}')" class="py-2.5 px-3 bg-purple-50 hover:bg-purple-100 text-purple-600 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 dark:bg-purple-950/40 dark:text-purple-400 dark:hover:bg-purple-900/40">
                                 <i data-lucide="activity" class="w-4 h-4"></i> Pantau Sesi
                             </button>
                         </div>
@@ -1712,7 +1914,7 @@
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali
                     </button>
                     
-                    <button onclick="resetAllStudentsExam('${examId}', '${examName}')" class="py-2.5 px-4 bg-rose-650 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-md shadow-rose-500/10">
+                    <button onclick="resetAllStudentsExam('${examId}', '${examName.replace(/'/g, "\\'")}')" class="py-2.5 px-4 bg-rose-650 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-md shadow-rose-500/10">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i> Reset Ujian Massal
                     </button>
                 </div>
@@ -1732,7 +1934,7 @@
                                         <p class="text-[10px] text-slate-400 font-semibold mt-1">NISN: ${item.student.nisn} | Kelas: ${item.student.kelas}</p>
                                         <p class="text-[11px] text-emerald-600 font-extrabold mt-2 bg-emerald-50/40 dark:bg-emerald-955/40 w-fit px-2 py-0.5 rounded-lg border border-emerald-100 dark:border-emerald-900/30">Nilai: ${item.result.skor}</p>
                                     </div>
-                                    <button onclick="resetStudentExam('${examId}', '${item.student.nisn}', '${item.student.nama}')" class="w-full py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[10px] font-bold rounded-lg transition-all flex items-center justify-center gap-1 dark:bg-rose-955/30 dark:text-rose-455">
+                                    <button onclick="resetStudentExam('${examId}', '${item.student.nisn}', '${item.student.nama.replace(/'/g, "\\'")}')" class="w-full py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[10px] font-bold rounded-lg transition-all flex items-center justify-center gap-1 dark:bg-rose-955/30 dark:text-rose-455">
                                         <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Reset Siswa
                                     </button>
                                 </div>
@@ -1754,7 +1956,7 @@
                                         <p class="text-[10px] text-slate-400 font-semibold mt-1">NISN: ${item.student.nisn} | Kelas: ${item.student.kelas}</p>
                                         <p class="text-[10px] text-amber-600 font-bold mt-1.5 animate-pulse flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Aktif Menjawab...</p>
                                     </div>
-                                    <button onclick="resetStudentExam('${examId}', '${item.student.nisn}', '${item.student.nama}')" class="w-full py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[10px] font-bold rounded-lg transition-all flex items-center justify-center gap-1 dark:bg-rose-955/30 dark:text-rose-455">
+                                    <button onclick="resetStudentExam('${examId}', '${item.student.nisn}', '${item.student.nama.replace(/'/g, "\\'")}')" class="w-full py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[10px] font-bold rounded-lg transition-all flex items-center justify-center gap-1 dark:bg-rose-955/30 dark:text-rose-455">
                                         <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Paksa Reset
                                     </button>
                                 </div>
@@ -1868,10 +2070,10 @@
             const listHtml = questions.map((q, idx) => `
                 <div class="glass-card rounded-3xl p-6 relative">
                     <div class="absolute top-4 right-4 flex items-center gap-1">
-                        <button onclick="startEditQuestion('${q.id}', '${examId}', '${mapelName}')" class="text-blue-600 hover:bg-blue-50 p-2 rounded-xl transition-all dark:text-blue-400 dark:hover:bg-blue-955/40" title="Edit Soal">
+                        <button onclick="startEditQuestion('${q.id}', '${examId}', '${mapelName.replace(/'/g, "\\'")}')" class="text-blue-600 hover:bg-blue-50 p-2 rounded-xl transition-all dark:text-blue-400 dark:hover:bg-blue-955/40" title="Edit Soal">
                             <i data-lucide="edit-2" class="w-4 h-4"></i>
                         </button>
-                        <button onclick="deleteQuestion('${q.id}', '${examId}', '${mapelName}')" class="text-rose-500 hover:bg-rose-50 p-2 rounded-xl transition-all dark:text-rose-455 dark:hover:bg-rose-955/40" title="Hapus Soal">
+                        <button onclick="deleteQuestion('${q.id}', '${examId}', '${mapelName.replace(/'/g, "\\'")}')" class="text-rose-500 hover:bg-rose-50 p-2 rounded-xl transition-all dark:text-rose-455 dark:hover:bg-rose-955/40" title="Hapus Soal">
                             <i data-lucide="trash" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -1888,7 +2090,7 @@
                     
                     <div class="space-y-2">
                         ${q.opsi.map((o, oIdx) => `
-                            <div class="flex items-center gap-3 px-4 py-3 rounded-xl border ${oIdx === q.jawaban_benar ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800 font-bold dark:border-emerald-900/30 dark:bg-emerald-950/30 dark:text-emerald-400' : 'border-slate-100 text-slate-500 dark:border-slate-800'} text-xs">
+                            <div class="flex items-center gap-3 px-4 py-3 rounded-xl border ${oIdx === q.jawaban_benar ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800 font-bold dark:border-emerald-900/30 dark:bg-emerald-955/30 dark:text-emerald-400' : 'border-slate-100 text-slate-500 dark:border-slate-800'} text-xs">
                                 <span class="font-extrabold uppercase">${['A', 'B', 'C', 'D', 'E'][oIdx]}.</span>
                                 <span class="flex-1">${o}</span>
                                 ${oIdx === q.jawaban_benar ? '<i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>' : ''}
@@ -1911,7 +2113,7 @@
                     currentEditQ = targetQ;
                     appState.tempQuestionImage = targetQ.gambar || "";
                     cancelBtnHtml = `
-                        <button type="button" onclick="cancelEditQuestion('${examId}', '${mapelName}')" class="w-full py-3.5 mt-2 rounded-xl border border-slate-200 text-slate-655 hover:bg-slate-50 font-bold text-xs transition-all dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800">Batal Mengubah</button>
+                        <button type="button" onclick="cancelEditQuestion('${examId}', '${mapelName.replace(/'/g, "\\'")}')" class="w-full py-3.5 mt-2 rounded-xl border border-slate-200 text-slate-655 hover:bg-slate-50 font-bold text-xs transition-all dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800">Batal Mengubah</button>
                     `;
                 }
             }
@@ -1932,7 +2134,7 @@
                             <i data-lucide="file-plus" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
                             ${formTitle}
                         </h3>
-                        <form onsubmit="handleQuestionSubmit(event, '${examId}', '${mapelName}')" class="space-y-4">
+                        <form onsubmit="handleQuestionSubmit(event, '${examId}', '${mapelName.replace(/'/g, "\\'")}')" class="space-y-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Pertanyaan / Teks Soal</label>
                                 <textarea id="add-q-teks" required rows="4" placeholder="Ketikkan teks soal di sini..." class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-800 text-sm font-semibold dark:bg-slate-800 dark:border-slate-700 dark:text-white">${currentEditQ.teks_soal}</textarea>
@@ -2331,10 +2533,10 @@
                     <div class="glass-card rounded-2xl overflow-hidden flex flex-col justify-between border border-slate-200 dark:border-slate-800">
                         <div class="p-4 bg-slate-100/50 dark:bg-slate-800/80 flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
                             <div class="min-w-0 flex-1 pr-2">
-                                <span class="text-[10px] font-extrabold text-blue-650 dark:text-blue-400 block truncate" title="${mapelName}">${mapelName}</span>
+                                <span class="text-[10px] font-extrabold text-blue-655 dark:text-blue-400 block truncate" title="${mapelName}">${mapelName}</span>
                                 <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400">Butir Soal No. ${questionIdx}</span>
                             </div>
-                            <button onclick="deleteGalleryImage('${q.id}', '${mapelName.replace(/'/g, "\\'")}', ${questionIdx})" class="p-2 bg-rose-50 hover:bg-rose-100 text-rose-650 rounded-xl transition-all dark:bg-rose-955/40 dark:text-rose-455" title="Hapus Media Gambar">
+                            <button onclick="deleteGalleryImage('${q.id}', '${mapelName.replace(/'/g, "\\'")}', ${questionIdx})" class="p-2 bg-rose-50 hover:bg-rose-100 text-rose-655 rounded-xl transition-all dark:bg-rose-955/40 dark:text-rose-455" title="Hapus Media Gambar">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -2381,7 +2583,7 @@
         window.deleteGalleryImage = function(qId, mapelName, questionIdx) {
             showCustomDialog(
                 "Hapus Gambar Soal",
-                `Apakah Anda yakin ingin menghapus lampiran gambar pada Soal No. ${questionIdx} di sesi "${mapelName}"? Pertanyaan teks aslinya akan tetap dipertahankan, hanya berkas gambarnya yang akan dihapus dari penyimpanan.`,
+                `Apakah Anda yakin ingin menghapus lampiran gambar pada Soal No. ${questionIdx} di sesi "${mapelName}"? Pertanyaan teks aslinya akan tetap dipertahaman, hanya berkas gambarnya yang akan dihapus dari penyimpanan.`,
                 async () => {
                     await editRecord('questions', qId, { gambar: "" });
                     showToast("Selesai", "Lampiran gambar berhasil dihapus secara permanen.", "success");
@@ -2456,7 +2658,7 @@
                 <div class="glass-card rounded-3xl p-6 md:p-8 mb-6 relative overflow-hidden">
                     <div class="absolute right-0 top-0 w-64 h-64 rounded-full bg-blue-500/5 blur-2xl pointer-events-none"></div>
                     <div class="flex items-center gap-3 relative z-10">
-                        <div class="p-2.5 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-955/40 dark:text-rose-400 shrink-0">
+                        <div class="p-2.5 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-955/40 dark:text-rose-455 shrink-0">
                             <i data-lucide="database" class="w-5 h-5"></i>
                         </div>
                         <div>
@@ -2533,6 +2735,140 @@
             );
         };
 
+        window.renderAdminSettings = async function() {
+            document.getElementById('header-view-title').textContent = "Keamanan & Pengaturan Anti-Cheat";
+            
+            const settings = appState.antiCheatSettings || {
+                max_violations: 3,
+                block_copy_paste: true,
+                block_right_click: true,
+                enforce_fullscreen: true,
+                auto_submit: true
+            };
+
+            const content = document.getElementById('content-container');
+            content.innerHTML = `
+                <div class="max-w-2xl mx-auto space-y-6">
+                    <div class="glass-card rounded-3xl p-6 md:p-8 relative overflow-hidden">
+                        <div class="absolute right-0 top-0 w-64 h-64 rounded-full bg-blue-500/5 blur-2xl pointer-events-none"></div>
+                        <div class="flex items-center gap-3 relative z-10">
+                            <div class="p-2.5 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-955/40 dark:text-blue-400 shrink-0">
+                                <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-extrabold text-lg text-slate-900 dark:text-white">Pengaturan Fitur Keamanan CBT</h3>
+                                <p class="text-xs text-slate-400 dark:text-slate-400 font-semibold mt-1">
+                                    Konfigurasikan aksi pencegahan kecurangan siswa secara real-time pada gawai masing-masing peserta.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-3xl p-6 md:p-8 space-y-6">
+                        <form onsubmit="saveAntiCheatSettings(event)" class="space-y-6">
+                            <!-- Input Batas Pelanggaran -->
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-850">
+                                <div class="space-y-1">
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Batas Maksimal Pelanggaran</h4>
+                                    <p class="text-xs text-slate-400 dark:text-slate-500 font-medium">Batas toleransi siswa berpindah tab/meninggalkan layar ujian sebelum tindakan diambil.</p>
+                                </div>
+                                <div class="w-24 shrink-0">
+                                    <input type="number" id="settings-max-violations" required min="1" max="10" value="${settings.max_violations}" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-sm font-bold text-slate-800 dark:text-white focus:border-blue-600 transition-all outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Toggle Blokir Klik Kanan -->
+                            <div class="flex items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-850">
+                                <div class="space-y-1">
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Blokir Menu Klik Kanan</h4>
+                                    <p class="text-xs text-slate-400 dark:text-slate-500 font-medium">Mencegah aksi klik kanan yang memungkinkan siswa melakukan inspeksi elemen atau pencarian jawaban.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="settings-block-right-click" ${settings.block_right_click ? 'checked' : ''} class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-750 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+
+                            <!-- Toggle Blokir Copy Paste -->
+                            <div class="flex items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-850">
+                                <div class="space-y-1">
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Blokir Copy, Paste, & Cut</h4>
+                                    <p class="text-xs text-slate-400 dark:text-slate-500 font-medium">Menonaktifkan fungsi salin (Ctrl+C), tempel (Ctrl+V), dan potong (Ctrl+X) baik dari mouse maupun pintasan keyboard.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="settings-block-copy-paste" ${settings.block_copy_paste ? 'checked' : ''} class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-750 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+
+                            <!-- Toggle Fullscreen -->
+                            <div class="flex items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-850">
+                                <div class="space-y-1">
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Enforce Fullscreen (Layar Penuh)</h4>
+                                    <p class="text-xs text-slate-400 dark:text-slate-500 font-medium">Memaksa browser siswa masuk ke mode Layar Penuh saat ujian berjalan dan memperingatkan jika keluar.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="settings-enforce-fullscreen" ${settings.enforce_fullscreen ? 'checked' : ''} class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-750 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+
+                            <!-- Toggle Auto Submit -->
+                            <div class="flex items-center justify-between gap-4 pb-4">
+                                <div class="space-y-1">
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Kirim Lembar Jawaban Otomatis (Force Submit)</h4>
+                                    <p class="text-xs text-slate-400 dark:text-slate-500 font-medium">Otomatis menyelesaikan ujian siswa dan mengirimkan lembar jawabannya ke server ketika batas pelanggaran terlampaui.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="settings-auto-submit" ${settings.auto_submit ? 'checked' : ''} class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-750 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+
+                            <button type="submit" class="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
+                                <i data-lucide="save" class="w-4 h-4"></i> Simpan Konfigurasi Keamanan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        };
+
+        window.saveAntiCheatSettings = async function(e) {
+            e.preventDefault();
+            const maxViolations = parseInt(document.getElementById('settings-max-violations').value);
+            const blockRightClick = document.getElementById('settings-block-right-click').checked;
+            const blockCopyPaste = document.getElementById('settings-block-copy-paste').checked;
+            const enforceFullscreen = document.getElementById('settings-enforce-fullscreen').checked;
+            const autoSubmit = document.getElementById('settings-auto-submit').checked;
+
+            const updatedData = {
+                max_violations: maxViolations,
+                block_right_click: blockRightClick,
+                block_copy_paste: blockCopyPaste,
+                enforce_fullscreen: enforceFullscreen,
+                auto_submit: autoSubmit
+            };
+
+            try {
+                // Simpan perubahan ke cloud jika tidak preview
+                const configs = await getRecords('app_config');
+                const configId = configs[0] ? configs[0].id : "cfg_01";
+                await editRecord('app_config', configId, updatedData);
+
+                // Perbarui ke local state
+                appState.antiCheatSettings = updatedData;
+                appState.examEngine.maxViolations = maxViolations;
+
+                showToast("Berhasil Disimpan", "Konfigurasi keamanan CBT berhasil diperbarui secara global.", "success");
+                renderAdminSettings();
+            } catch (err) {
+                showToast("Gagal Menyimpan", "Gagal memperbarui konfigurasi ke database.", "error");
+                console.error(err);
+            }
+        };
+
         window.renderStudentExams = async function() {
             document.getElementById('header-view-title').textContent = "Daftar Ujian Aktif";
             const exams = await getRecords('exams', { field: 'is_active', value: true });
@@ -2569,7 +2905,7 @@
                     `;
                 } else {
                     actionButtonHtml = `
-                        <button onclick="prepareCbtExam('${e.id}', '${e.mata_pelajaran}', ${e.durasi_menit})" class="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-wide transition-all shadow-md shadow-blue-500/10 active:scale-[0.98] flex items-center justify-center gap-2">
+                        <button onclick="prepareCbtExam('${e.id}', '${e.mata_pelajaran.replace(/'/g, "\\'")}', ${e.durasi_menit})" class="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-wide transition-all shadow-md shadow-blue-500/10 active:scale-[0.98] flex items-center justify-center gap-2">
                             <i data-lucide="play" class="w-4 h-4"></i> Mulai Ujian
                         </button>
                     `;
@@ -2625,7 +2961,7 @@
             content.innerHTML = `
                 <div class="glass-card rounded-3xl p-6 overflow-hidden">
                     <h3 class="font-extrabold text-base text-slate-900 mb-4 dark:text-white flex items-center gap-2">
-                        <i data-lucide="award" class="w-5 h-5 text-blue-650"></i>
+                        <i data-lucide="award" class="w-5 h-5 text-blue-655"></i>
                         Riwayat Ujian Selesai
                     </h3>
                     <div class="overflow-x-auto">
@@ -2639,7 +2975,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${rows || `<tr><td colspan="4" class="py-12 text-center text-slate-400 font-bold dark:text-slate-500">Anda belum mengkuti ujian apa pun.</td></tr>`}
+                                ${rows || `<tr><td colspan="4" class="py-12 text-center text-slate-400 font-bold dark:text-slate-500">Anda belum mengikuti ujian apa pun.</td></tr>`}
                             </tbody>
                         </table>
                     </div>
@@ -2664,6 +3000,7 @@
                 appState.examEngine.currentIdx = 0;
                 appState.examEngine.timerVal = durationMin * 60;
                 appState.examEngine.fontSizePercent = 100; 
+                appState.examEngine.violations = 0; // Reset Pelanggaran
 
                 await updateStudentStatus(appState.currentUser.data.nisn, 'working', examId);
 
@@ -2679,6 +3016,11 @@
                 renderExamQuestion();
                 renderExamNavigationGrid();
                 startExamCountdown();
+
+                // Aktifkan Fitur Keamanan Anti Nyontek
+                setTimeout(() => {
+                    window.enableAntiCheat();
+                }, 500);
             }, "play");
         };
 
@@ -2879,6 +3221,10 @@
 
         async function submitExamResults(isForced = false) {
             clearInterval(appState.examEngine.timerId);
+            
+            // Matikan pelacak anti-contek ketika ujian sudah dikirim
+            window.disableAntiCheat();
+
             const engine = appState.examEngine;
             
             let correctCount = 0;
@@ -2903,7 +3249,11 @@
             await updateStudentStatus(appState.currentUser.data.nisn, 'finished', engine.activeExam.id);
             
             if (isForced) {
-                showToast("Waktu Habis", "Sesi pengerjaan ditutup otomatis oleh sistem.", "error");
+                if (engine.violations >= engine.maxViolations) {
+                    showToast("Sanksi Keamanan", "Ujian dikirim paksa oleh sistem karena pelanggaran keamanan berulang.", "error");
+                } else {
+                    showToast("Waktu Habis", "Sesi pengerjaan ditutup otomatis oleh sistem.", "error");
+                }
             } else {
                 showToast("Berhasil Terkirim", "Lembar jawaban berhasil disimpan.", "success");
             }

@@ -126,7 +126,6 @@
             box-shadow: 0 10px 50px rgba(0,0,0,0.5) !important;
         }
         
-        /* OPTIMASI: Menghapus tag !important agar CSS state 'isSelected' aktif berjalan mulus di mode gelap */
         html.dark .option-card-transition {
             background-color: #1e293b;
             border-color: #334155;
@@ -185,6 +184,60 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased overflow-hidden">
 
+    <script>
+        // Intersepsi galat global seketika untuk kemudahan debugging
+        window.addEventListener('error', function(event) {
+            showOnScreenError(event.message, event.filename, event.lineno);
+        });
+        window.addEventListener('unhandledrejection', function(event) {
+            showOnScreenError(event.reason ? event.reason.message || event.reason : 'Unhandled Promise Rejection');
+        });
+
+        function showOnScreenError(message, source, lineno) {
+            let container = document.getElementById('debug-error-console');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'debug-error-console';
+                container.className = 'fixed bottom-4 left-4 right-4 z-[9999999] bg-rose-900/95 text-rose-100 p-4 rounded-2xl shadow-2xl border border-rose-500 max-h-80 overflow-y-auto text-xs font-mono';
+                container.innerHTML = `
+                    <div class="flex justify-between items-center mb-2 border-b border-rose-700 pb-1.5 font-bold text-sm">
+                        <span class="flex items-center gap-1.5 text-rose-300">🚨 Deteksi Masalah Sistem</span>
+                        <button onclick="this.parentElement.parentElement.remove()" class="text-rose-300 hover:text-white font-bold px-2 py-0.5 rounded bg-rose-800/50">Tutup</button>
+                    </div>
+                    <div id="debug-error-list" class="space-y-1"></div>
+                    <div id="debug-troubleshoot-container"></div>
+                    <p class="text-[10px] text-rose-300 mt-2 border-t border-rose-800 pt-1">Saran: Jika ini merupakan kesalahan 'CORS' atau 'Origin', jangan klik ganda file index.html secara lokal. Gunakan Local Server (seperti Live Server VS Code) atau unggah langsung ke Blogger.</p>
+                `;
+                document.body.appendChild(container);
+            }
+            const list = document.getElementById('debug-error-list');
+            if (list) {
+                const item = document.createElement('p');
+                item.className = 'border-l-2 border-rose-400 pl-2 py-0.5';
+                item.textContent = `${new Date().toLocaleTimeString()}: ${message} ${source ? `(${source.split('/').pop()}:${lineno})` : ''}`;
+                list.appendChild(item);
+            }
+
+            // Deteksi cerdas galat perizinan database (Permissions Denied)
+            let isPermissionError = message.toLowerCase().includes("permission") || message.toLowerCase().includes("insufficient");
+            if (isPermissionError) {
+                const troubleshootContainer = document.getElementById('debug-troubleshoot-container');
+                if (troubleshootContainer && troubleshootContainer.innerHTML === "") {
+                    troubleshootContainer.innerHTML = `
+                        <div class="mt-3 p-3.5 bg-rose-950/85 rounded-xl border border-rose-500/30 text-[11px] text-rose-200 space-y-2">
+                            <p class="font-bold text-amber-300 flex items-center gap-1.5">🛠️ Langkah Solusi Cepat (Firebase Console):</p>
+                            <ol class="list-decimal pl-4 space-y-1 text-slate-300">
+                                <li>Buka <strong>Firebase Console</strong> proyek Anda di browser.</li>
+                                <li>Masuk ke menu <strong>Authentication</strong> -> Tab <strong>Sign-in method</strong> -> Aktifkan penyedia <strong>Anonymous</strong> (Anonim) -> Simpan.</li>
+                                <li>Masuk ke menu <strong>Firestore Database</strong> -> Tab <strong>Rules</strong> (Aturan) -> Tempel isi dari editor kanan <code class="bg-rose-900/50 px-1 py-0.5 rounded text-white font-mono">firestore.rules</code> -> Klik <strong>Publish</strong>.</li>
+                            </ol>
+                        </div>
+                    `;
+                }
+            }
+        }
+    </script>
+
     <!-- Container Utama untuk mengisolasi aplikasi dari elemen bawaan Blogger -->
     <div id="cbt-blogger-container">
         
@@ -210,6 +263,9 @@
                 </div>
                 <h3 id="dialog-title" class="text-lg font-bold text-slate-900">Konfirmasi Tindakan</h3>
                 <p id="dialog-desc" class="text-slate-500 text-sm mt-2">Apakah Anda yakin?</p>
+                <div id="dialog-input-container" class="mt-4 hidden">
+                    <input type="text" id="dialog-custom-input" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold uppercase tracking-widest text-center text-slate-800 dark:text-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none" placeholder="MASUKKAN TOKEN">
+                </div>
                 <div class="flex justify-end gap-3 mt-6">
                     <button id="dialog-cancel-btn" class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-655 text-sm font-semibold hover:bg-slate-50 transition-colors">Batal</button>
                     <button id="dialog-confirm-btn" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors shadow-lg shadow-blue-500/20">Ya, Lanjutkan</button>
@@ -246,8 +302,13 @@
 
         <!-- View Halaman Login -->
         <div id="view-login" class="min-h-screen flex flex-col md:flex-row items-stretch justify-center h-full w-full bg-slate-50 relative">
+            <!-- Warning Banner for file:// protocol -->
+            <div id="local-protocol-warning" class="hidden absolute top-0 left-0 right-0 z-55 bg-amber-500 text-white px-4 py-3 text-center text-xs font-semibold shadow-md flex items-center justify-center gap-2">
+                <span>⚠️ Protokol Lokal Dideteksi (file://). Fitur Firebase/PWA tidak dapat berfungsi sebelum Anda mengunggah kode ini ke Blogger atau menggunakan Live Server lokal!</span>
+            </div>
+
             <!-- Floating Theme Toggle in Login page -->
-            <div class="absolute top-5 right-5 z-50">
+            <div class="absolute top-14 md:top-5 right-5 z-50">
                 <button onclick="toggleThemeMode()" class="p-3 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 transition-all theme-toggle-btn">
                     <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
                     <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
@@ -263,7 +324,7 @@
                     <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
                         <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
                     </div>
-                    <span class="font-extrabold text-xl tracking-wide uppercase">AIS CBT</span>
+                    <span class="font-extrabold text-xl tracking-wide uppercase">CBT Online</span>
                 </div>
                 <div class="relative z-10 my-auto">
                     <h1 class="text-4xl font-extrabold leading-tight">Sistem Asesmen Sekolah Mandiri Modern & Real-Time</h1>
@@ -289,7 +350,7 @@
             </div>
 
             <!-- Right Login Form Side -->
-            <div class="flex-1 flex items-center justify-center p-6 sm:p-12">
+            <div class="flex-1 flex items-center justify-center p-6 sm:p-12 mt-10 md:mt-0">
                 <div class="max-w-md w-full">
                     <div class="md:hidden flex flex-col items-center gap-1 mb-8 justify-center">
                         <div class="flex items-center gap-2 justify-center">
@@ -303,13 +364,13 @@
                     </div>
 
                     <div class="mb-6">
-                        <h2 class="text-2xl font-extrabold text-slate-950 dark:text-white">SELAMAT DATANG</h2>
+                        <h2 class="text-2xl font-extrabold text-slate-955 dark:text-white">SMKN 3 SELAYAR</h2>
                         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Silakan masuk menggunakan akun Anda.</p>
                     </div>
 
                     <!-- Toggle Role Login -->
                     <div class="flex bg-slate-200/60 dark:bg-slate-900 p-1 rounded-2xl mb-6">
-                        <button onclick="switchLoginTab('student')" id="tab-btn-student" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all text-blue-600 bg-white shadow-sm dark:bg-slate-800 dark:text-blue-450">
+                        <button onclick="switchLoginTab('student')" id="tab-btn-student" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all text-blue-600 bg-white shadow-sm dark:bg-slate-800 dark:text-blue-455">
                             <i data-lucide="user" class="w-4 h-4"></i> Siswa
                         </button>
                         <button onclick="switchLoginTab('admin')" id="tab-btn-admin" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-800 dark:hover:text-slate-300">
@@ -520,7 +581,7 @@
                 <!-- Navigation Sidebar Sheet -->
                 <div id="exam-nav-sidebar" class="w-full lg:w-80 bg-white dark:bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between shrink-0 overflow-y-auto lg:h-full transition-all duration-200">
                     <div>
-                        <h4 class="font-bold text-sm text-slate-950 dark:text-white mb-3">Navigasi Pengerjaan</h4>
+                        <h4 class="font-bold text-sm text-slate-955 dark:text-white mb-3">Navigasi Pengerjaan</h4>
                         <p class="text-xs text-slate-400 dark:text-slate-455 leading-normal mb-4">Klik nomor kotak di bawah ini untuk berpindah ke nomor pertanyaan yang diinginkan.</p>
                         
                         <div id="exam-navigation-grid" class="grid grid-cols-5 gap-2">
@@ -542,11 +603,12 @@
     <!-- JavaScript block implementing all application logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         // APP CONFIGURATIONS & DEPLOYMENT SWITCH
-        const IS_PREVIEW = false; // SET FALSE JIKA SUDAH TERHUBUNG KE REAL FIREBASE
+        // SET FALSE JIKA SUDAH TERHUBUNG KE REAL FIREBASE PROYEK ANDA
+        const IS_PREVIEW = false; 
         
         const firebaseConfig = {
             apiKey: "AIzaSyCg_iznsQaDRvn28c9IunJUztR7_CvOczA",
@@ -562,6 +624,27 @@
             const isDark = root.classList.toggle('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             lucide.createIcons();
+        };
+
+        window.checkExamToken = function(examId, mapelName, durationMin, examToken) {
+            if (examToken && examToken.trim() !== "") {
+                window.showInputDialog(
+                    "Token Akses Diperlukan",
+                    `Ujian "${mapelName}" dilindungi oleh Token Pengawas. Silakan masukkan token akses dari pengawas kelas untuk masuk ke ruang ujian.`,
+                    "MASUKKAN 5 DIGIT TOKEN",
+                    function(enteredToken) {
+                        if (enteredToken.toUpperCase() === examToken.toUpperCase()) {
+                            showToast("Token Valid", "Akses ujian disetujui.", "success");
+                            window.prepareCbtExam(examId, mapelName, durationMin);
+                        } else {
+                            showToast("Token Salah", "Token akses tidak valid atau salah ketik! Hubungi pengawas kelas.", "error");
+                        }
+                    },
+                    "key-round"
+                );
+            } else {
+                window.prepareCbtExam(examId, mapelName, durationMin);
+            }
         };
 
         window.toggleMainMenuPanel = function() {
@@ -608,8 +691,8 @@
                 { id: "std_03", nisn: "67890", nama: "Budi Pratama", kelas: "XII IPA 2", password: "123" }
             ],
             exams: [
-                { id: "exm_01", mata_pelajaran: "Matematika Dasar Terapan", durasi_menit: 45, waktu_mulai: "2026-07-11T08:00", waktu_selesai: "2026-07-20T23:59", is_active: true },
-                { id: "exm_02", mata_pelajaran: "Fisika Komputasi", durasi_menit: 60, waktu_mulai: "2026-07-12T10:00", waktu_selesai: "2026-07-22T23:59", is_active: true }
+                { id: "exm_01", mata_pelajaran: "Matematika Dasar Terapan", durasi_menit: 45, waktu_mulai: "2026-07-11T08:00", waktu_selesai: "2026-07-20T23:59", is_active: true, token: "MATH1" },
+                { id: "exm_02", mata_pelajaran: "Fisika Komputasi", durasi_menit: 60, waktu_mulai: "2026-07-12T10:00", waktu_selesai: "2026-07-22T23:59", is_active: true, token: "PHYS2" }
             ],
             questions: [
                 { id: "qst_01", id_ujian: "exm_01", teks_soal: "Berapa hasil turunan dari f(x) = 3x^2 + 5x - 7 pada x = 2?", opsi: ["11", "17", "12", "15", "19"], jawaban_benar: 1, gambar: "" },
@@ -624,8 +707,9 @@
                 { id: "sts_01", nisn: "12345", status: "online", examId: null, last_seen: "2026-07-11T22:30:00.000Z" }
             ],
             app_config: [
-                { id: "cfg_01", versi: "v1.0.0-Live", pembuat: "Akmal Iskandar, S.Pi (Gemini AI)", max_violations: 3, block_copy_paste: true, block_right_click: true, enforce_fullscreen: true, auto_submit: true }
-            ]
+                { id: "cfg_01", versi: "v1.0.0-Live", pembuat: "Akmal Iskandar, S.Pi (Gemini AI)", max_violations: 3, block_copy_paste: true, block_right_click: true, enforce_fullscreen: true, auto_submit: true, randomize_questions: true, randomize_options: true }
+            ],
+            exam_progress: []
         };
 
         let appState = {
@@ -639,12 +723,14 @@
             editingExamId: null,     // Menyimpan ID ujian yang sedang diedit
             tempQuestionImage: "",   // Menyimpan string Base64 gambar soal sementara
             appConfig: null,         // Menyimpan konfigurasi info aplikasi yang aktif
-            antiCheatSettings: {     // Menyimpan konfigurasi aktif fitur anti-cheat
+            antiCheatSettings: {     // Menyimpan konfigurasi aktif fitur anti-cheat & acak
                 max_violations: 3,
                 block_copy_paste: true,
                 block_right_click: true,
                 enforce_fullscreen: true,
-                auto_submit: true
+                auto_submit: true,
+                randomize_questions: true,
+                randomize_options: true
             },
             examEngine: {
                 activeExam: null,
@@ -822,7 +908,6 @@
             }
         };
 
-        // MEMUAT KONFIGURASI SECARA AMAN (Tamu/Siswa membaca fallback tanpa memaksa penulisan cloud kosong)
         window.loadAppConfig = async function() {
             try {
                 const configs = await getRecords('app_config');
@@ -830,25 +915,25 @@
                 if (!config) {
                     config = { 
                         id: "cfg_01", 
-                        versi: "v1.6.2-Live", 
+                        versi: "v1.0.0-Live", 
                         pembuat: "Akmal Iskandar, S.Pi (Gemini AI)",
                         max_violations: 3,
                         block_copy_paste: true,
                         block_right_click: true,
                         enforce_fullscreen: true,
-                        auto_submit: true
+                        auto_submit: true,
+                        randomize_questions: true,
+                        randomize_options: true
                     };
-                    // Hanya inisialisasi penulisan default ke cloud jika user aktif adalah Admin yang sah
                     if (!IS_PREVIEW && auth && auth.currentUser) {
                         try {
                             await createRecord('app_config', config);
                         } catch (err) {
-                            console.log("Inisialisasi cloud dilewati untuk Guest.");
+                            console.log("Inisialisasi cloud dilewati.");
                         }
                     }
                 }
                 
-                // Perbarui tampilan UI di login muka
                 const verEl = document.getElementById('login-app-version');
                 const creEl = document.getElementById('login-app-creator');
                 const verElMob = document.getElementById('login-app-version-mobile');
@@ -861,13 +946,14 @@
                 
                 appState.appConfig = config;
 
-                // Muat konfigurasi anti-cheat global
                 appState.antiCheatSettings = {
                     max_violations: config.max_violations !== undefined ? Number(config.max_violations) : 3,
-                    block_copy_paste: config.block_copy_paste !== undefined ? (config.block_copy_paste === true || config.block_copy_paste === "true") : true,
-                    block_right_click: config.block_right_click !== undefined ? (config.block_right_click === true || config.block_right_click === "true") : true,
-                    enforce_fullscreen: config.enforce_fullscreen !== undefined ? (config.enforce_fullscreen === true || config.enforce_fullscreen === "true") : true,
-                    auto_submit: config.auto_submit !== undefined ? (config.auto_submit === true || config.auto_submit === "true") : true
+                    block_copy_paste: config.block_copy_paste !== undefined ? (config.block_copy_paste === true || config.block_copy_paste === "true" || config.block_copy_paste === 1) : true,
+                    block_right_click: config.block_right_click !== undefined ? (config.block_right_click === true || config.block_right_click === "true" || config.block_right_click === 1) : true,
+                    enforce_fullscreen: config.enforce_fullscreen !== undefined ? (config.enforce_fullscreen === true || config.enforce_fullscreen === "true" || config.enforce_fullscreen === 1) : true,
+                    auto_submit: config.auto_submit !== undefined ? (config.auto_submit === true || config.auto_submit === "true" || config.auto_submit === 1) : true,
+                    randomize_questions: config.randomize_questions !== undefined ? (config.randomize_questions === true || config.randomize_questions === "true" || config.randomize_questions === 1) : true,
+                    randomize_options: config.randomize_options !== undefined ? (config.randomize_options === true || config.randomize_options === "true" || config.randomize_options === 1) : true
                 };
                 appState.examEngine.maxViolations = appState.antiCheatSettings.max_violations;
             } catch (err) {
@@ -878,10 +964,10 @@
         async function autoSetupDatabase() {
             if (IS_PREVIEW) return;
             try {
-                const stdCol = collection(db, "students");
-                const exmCol = collection(db, "exams");
-                const qstCol = collection(db, "questions");
-                const cfgCol = collection(db, "app_config");
+                const stdCol = getCollectionRef("students");
+                const exmCol = getCollectionRef("exams");
+                const qstCol = getCollectionRef("questions");
+                const cfgCol = getCollectionRef("app_config");
 
                 const snapStudents = await getDocs(stdCol);
                 if (snapStudents.empty) {
@@ -913,8 +999,14 @@
             }
         }
 
-        // Initialize Firebase Connectors
         function initFirebase() {
+            // Check protocol security
+            if (window.location.protocol === 'file:') {
+                const warningBanner = document.getElementById('local-protocol-warning');
+                if (warningBanner) warningBanner.classList.remove('hidden');
+                showToast("Protokol Tidak Aman", "Anda menjalankan index.html langsung dari file lokal. Fitur Firebase diblokir browser. Gunakan Live Server lokal atau unggah ke Blogger.", "error");
+            }
+
             if (!IS_PREVIEW) {
                 try {
                     app = initializeApp(firebaseConfig);
@@ -922,7 +1014,47 @@
                     db = getFirestore(app);
                 } catch (err) {
                     console.error("Firebase Gagal Memuat. Beralih ke Mode Sandbox/Demo:", err);
+                    showOnScreenError("Firebase Init Error: " + err.message);
                 }
+            }
+        }
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'firecbt-3ae12';
+
+        function getCollectionRef(colName) {
+            if (IS_PREVIEW || !db) return null;
+            return collection(db, 'artifacts', appId, 'public', 'data', colName);
+        }
+
+        function getDocRef(colName, docId) {
+            if (IS_PREVIEW || !db) return null;
+            return doc(db, 'artifacts', appId, 'public', 'data', colName, docId);
+        }
+
+        async function ensureAuth() {
+            if (IS_PREVIEW || !auth) return true;
+            if (auth.currentUser) return true;
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (tokenErr) {
+                        console.warn("Custom token invalid, falling back to anonymous auth:", tokenErr);
+                        await signInAnonymously(auth);
+                    }
+                } else {
+                    await signInAnonymously(auth);
+                }
+                return true;
+            } catch (err) {
+                console.error("Autentikasi Firestore gagal:", err);
+                if (err.code === 'auth/operation-not-allowed') {
+                    showToast("Firebase Auth Error", "Anonymous Sign-In dinonaktifkan di Firebase Console Anda! Silakan ikuti petunjuk aktivasi.", "error");
+                } else {
+                    showToast("Koneksi Firebase Gagal", "Gagal mengautentikasi: " + err.message, "error");
+                }
+                showOnScreenError("Auth Connection Failed: " + err.message + " (" + err.code + ")");
+                return false;
             }
         }
 
@@ -935,13 +1067,15 @@
                 return records;
             } else {
                 try {
-                    const targetCol = collection(db, colName);
+                    await ensureAuth();
+                    if (!auth.currentUser) return [];
+                    const targetCol = getCollectionRef(colName);
                     let q = targetCol;
                     if (queryFilters) {
                         q = query(targetCol, where(queryFilters.field, "==", queryFilters.value));
                     }
                     const snap = await getDocs(q);
-                    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    return snap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
                 } catch (err) {
                     console.error("Gagal mengambil records:", err);
                     return [];
@@ -956,8 +1090,15 @@
                 mockDB[colName].push(completeRecord);
                 return completeRecord;
             } else {
-                const ref = await addDoc(collection(db, colName), docData);
-                return { id: ref.id, ...docData };
+                try {
+                    await ensureAuth();
+                    if (!auth.currentUser) return docData;
+                    const ref = await addDoc(getCollectionRef(colName), docData);
+                    return { ...docData, id: ref.id };
+                } catch (err) {
+                    console.error("Gagal menulis record:", err);
+                    return docData;
+                }
             }
         }
 
@@ -968,7 +1109,14 @@
                     mockDB[colName][targetIdx] = { ...mockDB[colName][targetIdx], ...docData };
                 }
             } else {
-                await updateDoc(doc(db, colName, docId), docData);
+                try {
+                    const authenticated = await ensureAuth();
+                    if (!authenticated || !auth.currentUser) return;
+                    await updateDoc(getDocRef(colName, docId), docData);
+                } catch (err) {
+                    console.error("Gagal mengubah record:", err);
+                    showOnScreenError(`Failed to update record [${docId}] in [${colName}]: ` + err.message);
+                }
             }
         }
 
@@ -976,7 +1124,14 @@
             if (IS_PREVIEW || !db) {
                 mockDB[colName] = mockDB[colName].filter(r => r.id !== docId);
             } else {
-                await deleteDoc(doc(db, colName, docId));
+                try {
+                    const authenticated = await ensureAuth();
+                    if (!authenticated || !auth.currentUser) return;
+                    await deleteDoc(getDocRef(colName, docId));
+                } catch (err) {
+                    console.error("Gagal menghapus record:", err);
+                    showOnScreenError(`Failed to delete record [${docId}] in [${colName}]: ` + err.message);
+                }
             }
         }
 
@@ -1072,6 +1227,9 @@
             const iconEl = document.getElementById('dialog-icon');
             const cancelBtn = document.getElementById('dialog-cancel-btn');
             const confirmBtn = document.getElementById('dialog-confirm-btn');
+            const inputContainer = document.getElementById('dialog-input-container');
+
+            if (inputContainer) inputContainer.classList.add('hidden');
 
             titleEl.textContent = title;
             descEl.textContent = desc;
@@ -1107,6 +1265,60 @@
             });
         };
 
+        window.showInputDialog = function(title, desc, placeholder, onConfirm, icon = "key-round") {
+            const modal = document.getElementById('custom-dialog');
+            const box = modal.querySelector('div');
+            const titleEl = document.getElementById('dialog-title');
+            const descEl = document.getElementById('dialog-desc');
+            const iconEl = document.getElementById('dialog-icon');
+            const cancelBtn = document.getElementById('dialog-cancel-btn');
+            const confirmBtn = document.getElementById('dialog-confirm-btn');
+            const inputContainer = document.getElementById('dialog-input-container');
+            const inputEl = document.getElementById('dialog-custom-input');
+
+            titleEl.textContent = title;
+            descEl.textContent = desc;
+            iconEl.setAttribute('data-lucide', icon);
+            
+            if (inputContainer) inputContainer.classList.remove('hidden');
+            if (inputEl) {
+                inputEl.value = "";
+                inputEl.placeholder = placeholder;
+            }
+            lucide.createIcons();
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                box.classList.remove('scale-95', 'opacity-0');
+                box.classList.add('scale-100', 'opacity-100');
+                if (inputEl) inputEl.focus();
+            }, 50);
+
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+            const closeDialog = () => {
+                box.classList.remove('scale-100', 'opacity-100');
+                box.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    if (inputContainer) inputContainer.classList.add('hidden');
+                }, 150);
+            };
+
+            newConfirmBtn.addEventListener('click', () => {
+                const val = inputEl ? inputEl.value.trim() : "";
+                closeDialog();
+                onConfirm(val);
+            });
+
+            newCancelBtn.addEventListener('click', () => {
+                closeDialog();
+            });
+        };
+
         window.switchLoginTab = function(role) {
             const tabStd = document.getElementById('tab-btn-student');
             const tabAdm = document.getElementById('tab-btn-admin');
@@ -1114,7 +1326,7 @@
             const formAdm = document.getElementById('form-login-admin');
 
             if (role === 'student') {
-                tabStd.className = "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all text-blue-600 bg-white shadow-sm dark:bg-slate-800 dark:text-blue-450";
+                tabStd.className = "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all text-blue-600 bg-white shadow-sm dark:bg-slate-800 dark:text-blue-455";
                 tabAdm.className = "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-800 dark:hover:text-slate-300";
                 formStd.classList.remove('hidden');
                 formAdm.classList.add('hidden');
@@ -1176,6 +1388,7 @@
                     switchView('view-main');
                 } catch (err) {
                     showToast("Akses Gagal", "Email atau Password Salah.", "error");
+                    showOnScreenError("Admin Login Fail: " + err.message);
                 }
             }
         };
@@ -1275,7 +1488,7 @@
                 b.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-slate-500 hover:text-slate-800 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/45";
             });
             const dBtn = document.getElementById(`nav-d-${tabId}`);
-            if (dBtn) dBtn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-blue-50 text-blue-600 transition-all dark:bg-blue-950/20 dark:text-blue-400 shadow-sm border border-blue-100/30 dark:border-blue-950/20";
+            if (dBtn) dBtn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-blue-50 text-blue-600 transition-all dark:bg-blue-950/20 dark:text-blue-400 shadow-sm border border-blue-100/30 dark:border-blue-955/20";
 
             // Set Active Mobile Buttons
             document.querySelectorAll('#nav-container-mobile button').forEach(b => {
@@ -1408,7 +1621,7 @@
             const content = document.getElementById('content-container');
             content.innerHTML = `
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Left Sidebar Forms -->
+                    <!-- Sisi Form Kiri -->
                     <div class="space-y-6">
                         <!-- Form Tambah/Edit -->
                         <div class="glass-card rounded-3xl p-6 h-fit">
@@ -1440,7 +1653,7 @@
                             </form>
                         </div>
 
-                        <!-- Bulk Import Section -->
+                        <!-- Bagian Impor Massal -->
                         <div class="glass-card rounded-3xl p-6 h-fit">
                             <div class="flex items-center justify-between cursor-pointer" onclick="toggleBulkUploadForm()">
                                 <h3 class="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
@@ -1464,7 +1677,7 @@
                                     </div>
                                 </div>
 
-                                <button type="button" onclick="downloadExcelTemplate()" class="w-full py-2.5 px-3 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                                <button type="button" onclick="downloadExcelTemplate()" class="w-full py-2.5 px-3 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-855 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm">
                                     <i data-lucide="download" class="w-3.5 h-3.5"></i> Unduh Template Excel (.xlsx)
                                 </button>
 
@@ -1472,7 +1685,7 @@
                                     <div class="relative border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors flex flex-col items-center justify-center cursor-pointer group">
                                         <input type="file" id="bulk-excel-file" accept=".xlsx, .xls" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="handleExcelFileSelect(this)">
                                         <div class="text-center pointer-events-none">
-                                            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform dark:bg-blue-955/40 dark:text-blue-400">
+                                            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform dark:bg-blue-955/40 dark:text-blue-450">
                                                 <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
                                             </div>
                                             <p id="excel-file-label" class="text-xs font-bold text-slate-700 dark:text-slate-300">Pilih berkas Excel sekolah</p>
@@ -1487,7 +1700,7 @@
                         </div>
                     </div>
 
-                    <!-- Tabel List -->
+                    <!-- Tabel List Siswa -->
                     <div class="lg:col-span-2 glass-card rounded-3xl p-6 overflow-hidden flex flex-col">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                             <h3 class="font-extrabold text-base text-slate-900 dark:text-white">Siswa Terdaftar</h3>
@@ -1504,7 +1717,7 @@
                                 </div>
 
                                 ${appState.selectedStudents.length > 0 ? `
-                                    <button onclick="deleteSelectedStudents()" class="py-2.5 px-3.5 bg-rose-50 hover:bg-rose-100 text-rose-655 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 shadow-sm dark:bg-rose-955/20 dark:text-rose-400">
+                                    <button onclick="deleteSelectedStudents()" class="py-2.5 px-3.5 bg-rose-50 hover:bg-rose-100 text-rose-655 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 shadow-sm dark:bg-rose-955/20 dark:text-rose-450">
                                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus Terpilih (${appState.selectedStudents.length})
                                     </button>
                                 ` : ''}
@@ -1516,7 +1729,7 @@
                                 <thead>
                                     <tr class="border-b border-slate-200 text-slate-400 text-[10px] font-extrabold uppercase tracking-wider dark:border-slate-700">
                                         <th class="pb-3 px-6 w-12">
-                                            <input type="checkbox" id="check-all-students" ${isAllSelected ? 'checked' : ''} onchange="toggleSelectAllStudents(this.checked)" class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 dark:bg-slate-850 dark:border-slate-700">
+                                            <input type="checkbox" id="check-all-students" ${isAllSelected ? 'checked' : ''} onchange="toggleSelectAllStudents(this.checked)" class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 dark:bg-slate-855 dark:border-slate-700">
                                         </th>
                                         <th class="pb-3 px-6">NISN</th>
                                         <th class="pb-3 px-6">Nama Siswa</th>
@@ -1642,7 +1855,7 @@
             const label = document.getElementById('excel-file-label');
             if (input.files && input.files[0]) {
                 label.textContent = input.files[0].name;
-                label.className = "text-xs font-bold text-blue-600 dark:text-blue-400 truncate max-w-[200px]";
+                label.className = "text-xs font-bold text-blue-600 dark:text-blue-455 truncate max-w-[200px]";
             } else {
                 label.textContent = "Pilih berkas Excel sekolah";
                 label.className = "text-xs font-bold text-slate-700 dark:text-slate-300";
@@ -1747,7 +1960,7 @@
                     <div>
                         <div class="flex justify-between items-start gap-2">
                             <h4 class="font-extrabold text-slate-900 dark:text-white text-lg leading-tight truncate flex-1" title="${e.mata_pelajaran}">${e.mata_pelajaran}</h4>
-                            <span class="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase shrink-0 ${e.is_active ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-455' : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'}">
+                            <span class="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase shrink-0 ${e.is_active ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-955/40 dark:text-emerald-400' : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'}">
                                 ${e.is_active ? 'Aktif' : 'Off'}
                             </span>
                         </div>
@@ -1759,6 +1972,9 @@
                         </p>
                         <p class="text-[11px] text-rose-600 dark:text-rose-455 font-bold mt-1.5 flex items-center gap-1.5">
                             <i data-lucide="calendar-off" class="w-4 h-4"></i> Selesai: ${formatWaktuIndo(e.waktu_selesai)}
+                        </p>
+                        <p class="text-[11px] text-amber-650 dark:text-amber-400 font-bold mt-1.5 flex items-center gap-1.5">
+                            <i data-lucide="key-round" class="w-4 h-4"></i> Token: <span class="bg-amber-100 dark:bg-amber-955/40 px-2 py-0.5 rounded text-xs tracking-wider font-extrabold uppercase select-all">${e.token || 'TIDAK ADA'}</span>
                         </p>
                     </div>
 
@@ -1788,7 +2004,7 @@
 
             let formTitle = "Buat Sesi Ujian";
             let formOnSubmit = "addExam(event)";
-            let currentEditData = { mata_pelajaran: '', durasi_menit: '', waktu_mulai: '', waktu_selesai: '' };
+            let currentEditData = { mata_pelajaran: '', durasi_menit: '', waktu_mulai: '', waktu_selesai: '', token: '' };
             let cancelBtnHtml = "";
 
             if (appState.editingExamId) {
@@ -1829,6 +2045,15 @@
                                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Waktu Selesai (Opsional)</label>
                                 <input type="datetime-local" id="add-waktu-selesai" value="${currentEditData.waktu_selesai || ''}" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-800 text-sm font-semibold dark:bg-slate-800 dark:border-slate-700 dark:text-white">
                             </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Token Akses Sesi (Opsional)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="add-token" placeholder="Contoh: TOK99" value="${currentEditData.token || ''}" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-800 text-sm font-bold uppercase tracking-wider dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                                    <button type="button" onclick="generateRandomToken()" class="px-3.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-200 transition-colors text-slate-600 dark:text-slate-300 font-bold text-xs shrink-0 flex items-center justify-center" title="Buat Token Acak">
+                                        Acak
+                                    </button>
+                                </div>
+                            </div>
                             <button type="submit" class="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md shadow-blue-500/10">
                                 ${appState.editingExamId ? 'Simpan Perubahan' : 'Buka Sesi Ujian'}
                             </button>
@@ -1865,13 +2090,24 @@
                 mata_pelajaran: document.getElementById('add-mapel').value,
                 durasi_menit: parseInt(document.getElementById('add-durasi').value),
                 waktu_mulai: document.getElementById('add-waktu-mulai').value,
-                waktu_selesai: document.getElementById('add-waktu-selesai').value || ""
+                waktu_selesai: document.getElementById('add-waktu-selesai').value || "",
+                token: document.getElementById('add-token').value.trim().toUpperCase()
             };
 
             await editRecord('exams', appState.editingExamId, updatedData);
             showToast("Sukses", "Detail sesi ujian berhasil diperbarui.", "success");
             appState.editingExamId = null;
             renderAdminExams();
+        };
+
+        window.generateRandomToken = function() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let token = "";
+            for (let i = 0; i < 5; i++) {
+                token += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            const tokenInput = document.getElementById('add-token');
+            if (tokenInput) tokenInput.value = token;
         };
 
         window.deleteExam = function(examId) {
@@ -1916,7 +2152,7 @@
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali
                     </button>
                     
-                    <button onclick="resetAllStudentsExam('${examId}', '${examName.replace(/'/g, "\\'")}')" class="py-2.5 px-4 bg-rose-650 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-md shadow-rose-500/10">
+                    <button onclick="resetAllStudentsExam('${examId}', '${examName.replace(/'/g, "\\'")}')" class="py-2.5 px-4 bg-rose-655 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-md shadow-rose-500/10">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i> Reset Ujian Massal
                     </button>
                 </div>
@@ -1992,7 +2228,7 @@
                         <div class="flex-1 overflow-y-auto space-y-3">
                             ${offlineList.map(item => `
                                 <div class="bg-white dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-150 shadow-sm opacity-65 dark:border-slate-800">
-                                    <p class="text-xs font-bold text-slate-600 truncate dark:text-slate-350">${item.student.nama}</p>
+                                    <p class="text-xs font-bold text-slate-600 truncate dark:text-slate-355">${item.student.nama}</p>
                                     <p class="text-[10px] text-slate-455 font-semibold mt-1">NISN: ${item.student.nisn} | Kelas: ${item.student.kelas}</p>
                                 </div>
                             `).join('') || `<p class="text-xs text-slate-400 text-center py-6 font-medium">Semua siswa sudah masuk.</p>`}
@@ -2052,6 +2288,7 @@
                 durasi_menit: parseInt(document.getElementById('add-durasi').value),
                 waktu_mulai: document.getElementById('add-waktu-mulai').value,
                 waktu_selesai: document.getElementById('add-waktu-selesai').value || "",
+                token: document.getElementById('add-token').value.trim().toUpperCase(),
                 is_active: false
             };
             await createRecord('exams', data);
@@ -2484,7 +2721,7 @@
                 doc.setFont("helvetica", "normal");
                 doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 14, 24);
                 
-                const classLabel = appState.resultFilterClass ? `Kelas ${appState.resultFilterClass}` : 'Semua Kelas';
+                const classLabel = appState.resultFilterClass ? `Kelas ${classLabel}` : 'Semua Kelas';
                 doc.text(`Saringan Kelas: ${classLabel}`, 14, 29);
 
                 const bodyData = results.map((r, idx) => {
@@ -2646,7 +2883,7 @@
                                 <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Database Hasil Ujian
                             </button>
                             
-                            <button onclick="purgeExamQuestionsData('${e.id}', '${e.mata_pelajaran.replace(/'/g, "\\'")}')" ${!hasQuestions ? 'disabled' : ''} class="w-full py-2.5 bg-purple-50 hover:bg-purple-100 text-purple-600 hover:text-purple-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-purple-50 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 dark:bg-purple-955/30 dark:text-purple-400 dark:hover:bg-purple-900/40">
+                            <button onclick="purgeExamQuestionsData('${e.id}', '${e.mata_pelajaran.replace(/'/g, "\\'")}')" ${!hasQuestions ? 'disabled' : ''} class="w-full py-2.5 bg-purple-50 hover:bg-purple-100 text-purple-600 hover:text-purple-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-rose-50 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 dark:bg-purple-955/30 dark:text-purple-400 dark:hover:bg-purple-900/40">
                                 <i data-lucide="book-open" class="w-4 h-4"></i> Hapus Database Bank Soal
                             </button>
                             <p class="text-[9px] text-slate-400 dark:text-slate-455 font-semibold text-center mt-1 leading-normal">Pilih "Hasil Ujian" untuk mereset skor pengerjaan, pilih "Bank Soal" untuk menghapus seluruh butir soal ujian terkait.</p>
@@ -2738,14 +2975,16 @@
         };
 
         window.renderAdminSettings = async function() {
-            document.getElementById('header-view-title').textContent = "Keamanan & Pengaturan Anti-Cheat";
+            document.getElementById('header-view-title').textContent = "Keamanan & Pengaturan CBT";
             
             const settings = appState.antiCheatSettings || {
                 max_violations: 3,
                 block_copy_paste: true,
                 block_right_click: true,
                 enforce_fullscreen: true,
-                auto_submit: true
+                auto_submit: true,
+                randomize_questions: true,
+                randomize_options: true
             };
 
             const content = document.getElementById('content-container');
@@ -2758,9 +2997,9 @@
                                 <i data-lucide="shield-alert" class="w-6 h-6"></i>
                             </div>
                             <div>
-                                <h3 class="font-extrabold text-lg text-slate-900 dark:text-white">Pengaturan Fitur Keamanan CBT</h3>
+                                <h3 class="font-extrabold text-lg text-slate-900 dark:text-white">Pengaturan Fitur Keamanan & Soal</h3>
                                 <p class="text-xs text-slate-400 dark:text-slate-400 font-semibold mt-1">
-                                    Konfigurasikan aksi pencegahan kecurangan siswa secara real-time pada gawai masing-masing peserta.
+                                    Konfigurasikan aksi pencegahan kecurangan serta kebijakan pengacakan urutan soal siswa secara real-time.
                                 </p>
                             </div>
                         </div>
@@ -2768,11 +3007,39 @@
 
                     <div class="glass-card rounded-3xl p-6 md:p-8 space-y-6">
                         <form onsubmit="saveAntiCheatSettings(event)" class="space-y-6">
+                            
+                            <!-- Bagian Pengacakan Soal & Opsi (Fitur 2) -->
+                            <div class="space-y-4 pb-4 border-b border-slate-100 dark:border-slate-855">
+                                <h3 class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Pengaturan Pengacakan (Sesi Baru)</h3>
+                                
+                                <div class="flex items-center justify-between gap-4 py-2">
+                                    <div class="space-y-1">
+                                        <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Acak Urutan Soal (Fisher-Yates)</h4>
+                                        <p class="text-xs text-slate-400 dark:text-slate-505 font-medium">Mengacak urutan butir soal sehingga nomor urut soal setiap siswa berbeda secara unik.</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="settings-randomize-questions" ${settings.randomize_questions ? 'checked' : ''} class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-200 dark:bg-slate-750 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+
+                                <div class="flex items-center justify-between gap-4 py-2">
+                                    <div class="space-y-1">
+                                        <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Acak Urutan Pilihan Jawaban</h4>
+                                        <p class="text-xs text-slate-400 dark:text-slate-505 font-medium">Mengacak urutan huruf pilihan ganda (A, B, C, D, E) tanpa mengubah kunci jawaban asli.</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="settings-randomize-options" ${settings.randomize_options ? 'checked' : ''} class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-200 dark:bg-slate-750 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+
                             <!-- Input Batas Pelanggaran -->
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-855">
                                 <div class="space-y-1">
                                     <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Batas Maksimal Pelanggaran</h4>
-                                    <p class="text-xs text-slate-400 dark:text-slate-500 font-medium">Batas toleransi siswa berpindah tab/meninggalkan layar ujian sebelum tindakan diambil.</p>
+                                    <p class="text-xs text-slate-400 dark:text-slate-505 font-medium">Batas toleransi siswa berpindah tab/meninggalkan layar ujian sebelum tindakan diambil.</p>
                                 </div>
                                 <div class="w-24 shrink-0">
                                     <input type="number" id="settings-max-violations" required min="1" max="10" value="${settings.max_violations}" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-sm font-bold text-slate-800 dark:text-white focus:border-blue-600 transition-all outline-none">
@@ -2783,11 +3050,11 @@
                             <div class="flex items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-855">
                                 <div class="space-y-1">
                                     <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Blokir Menu Klik Kanan</h4>
-                                    <p class="text-xs text-slate-400 dark:text-slate-500 font-medium">Mencegah aksi klik kanan yang memungkinkan siswa melakukan inspeksi elemen atau pencarian jawaban.</p>
+                                    <p class="text-xs text-slate-400 dark:text-slate-505 font-medium">Mencegah aksi klik kanan yang memungkinkan siswa melakukan inspeksi elemen atau pencarian jawaban.</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" id="settings-block-right-click" ${settings.block_right_click ? 'checked' : ''} class="sr-only peer">
-                                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-750 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-755 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 </label>
                             </div>
 
@@ -2795,11 +3062,11 @@
                             <div class="flex items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-855">
                                 <div class="space-y-1">
                                     <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Blokir Copy, Paste, & Cut</h4>
-                                    <p class="text-xs text-slate-400 dark:text-slate-500 font-medium">Menonaktifkan fungsi salin (Ctrl+C), tempel (Ctrl+V), dan potong (Ctrl+X) baik dari mouse maupun pintasan keyboard.</p>
+                                    <p class="text-xs text-slate-400 dark:text-slate-505 font-medium">Menonaktifkan fungsi salin (Ctrl+C), tempel (Ctrl+V), dan potong (Ctrl+X) baik dari mouse maupun pintasan keyboard.</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" id="settings-block-copy-paste" ${settings.block_copy_paste ? 'checked' : ''} class="sr-only peer">
-                                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-750 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-755 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 </label>
                             </div>
 
@@ -2807,11 +3074,11 @@
                             <div class="flex items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-855">
                                 <div class="space-y-1">
                                     <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Enforce Fullscreen (Layar Penuh)</h4>
-                                    <p class="text-xs text-slate-400 dark:text-slate-500 font-medium">Memaksa browser siswa masuk ke mode Layar Penuh saat ujian berjalan dan memperingatkan jika keluar.</p>
+                                    <p class="text-xs text-slate-400 dark:text-slate-505 font-medium">Memaksa browser siswa masuk ke mode Layar Penuh saat ujian berjalan dan memperingatkan jika keluar.</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" id="settings-enforce-fullscreen" ${settings.enforce_fullscreen ? 'checked' : ''} class="sr-only peer">
-                                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-750 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-755 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 </label>
                             </div>
 
@@ -2819,11 +3086,11 @@
                             <div class="flex items-center justify-between gap-4 pb-4">
                                 <div class="space-y-1">
                                     <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Kirim Lembar Jawaban Otomatis (Force Submit)</h4>
-                                    <p class="text-xs text-slate-400 dark:text-slate-500 font-medium">Otomatis menyelesaikan ujian siswa dan mengirimkan lembar jawabannya ke server ketika batas pelanggaran terlampaui.</p>
+                                    <p class="text-xs text-slate-400 dark:text-slate-550 font-medium">Otomatis menyelesaikan ujian siswa dan mengirimkan lembar jawabannya ke server ketika batas pelanggaran terlampaui.</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" id="settings-auto-submit" ${settings.auto_submit ? 'checked' : ''} class="sr-only peer">
-                                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-750 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-755 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 </label>
                             </div>
 
@@ -2844,17 +3111,20 @@
             const blockCopyPaste = document.getElementById('settings-block-copy-paste').checked;
             const enforceFullscreen = document.getElementById('settings-enforce-fullscreen').checked;
             const autoSubmit = document.getElementById('settings-auto-submit').checked;
+            const randomizeQuestions = document.getElementById('settings-randomize-questions').checked;
+            const randomizeOptions = document.getElementById('settings-randomize-options').checked;
 
             const updatedData = {
                 max_violations: maxViolations,
                 block_right_click: blockRightClick,
                 block_copy_paste: blockCopyPaste,
                 enforce_fullscreen: enforceFullscreen,
-                auto_submit: autoSubmit
+                auto_submit: autoSubmit,
+                randomize_questions: randomizeQuestions,
+                randomize_options: randomizeOptions
             };
 
             try {
-                // Simpan perubahan ke cloud jika tidak preview
                 const configs = await getRecords('app_config');
                 const configId = configs[0] ? configs[0].id : "cfg_01";
                 await editRecord('app_config', configId, updatedData);
@@ -2907,7 +3177,7 @@
                     `;
                 } else {
                     actionButtonHtml = `
-                        <button onclick="prepareCbtExam('${e.id}', '${e.mata_pelajaran.replace(/'/g, "\\'")}', ${e.durasi_menit})" class="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-wide transition-all shadow-md shadow-blue-500/10 active:scale-[0.98] flex items-center justify-center gap-2">
+                        <button onclick="checkExamToken('${e.id}', '${e.mata_pelajaran.replace(/'/g, "\\'")}', ${e.durasi_menit}, '${e.token || ''}')" class="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-wide transition-all shadow-md shadow-blue-500/10 active:scale-[0.98] flex items-center justify-center gap-2">
                             <i data-lucide="play" class="w-4 h-4"></i> Mulai Ujian
                         </button>
                     `;
@@ -2986,6 +3256,84 @@
             lucide.createIcons();
         };
 
+        window.saveExamProgress = async function() {
+            const engine = appState.examEngine;
+            if (!engine.activeExam || !appState.currentUser || appState.currentUser.role !== 'student') return;
+            
+            const studentNisn = appState.currentUser.data.nisn;
+            const examId = engine.activeExam.id;
+            
+            const progressData = {
+                nisn: studentNisn,
+                examId: examId,
+                answers: JSON.stringify(engine.answers),
+                doubtful: JSON.stringify(engine.doubtful),
+                currentIdx: engine.currentIdx,
+                timerVal: engine.timerVal,
+                shuffledQuestions: JSON.stringify(engine.questions), // FITUR 2: Simpan urutan acak agar tidak berubah saat restore!
+                lastUpdated: new Date().toISOString()
+            };
+
+            try {
+                const records = await getRecords('exam_progress');
+                const matched = records.find(r => r.nisn === studentNisn && r.examId === examId);
+                if (matched) {
+                    await editRecord('exam_progress', matched.id, progressData);
+                } else {
+                    await createRecord('exam_progress', progressData);
+                }
+            } catch (err) {
+                console.error("Gagal melakukan auto-save progress:", err);
+            }
+        };
+
+        function launchExamUI(mapelName) {
+            const sidebar = document.getElementById('exam-nav-sidebar');
+            if (sidebar) sidebar.classList.remove('hidden');
+            const tText = document.getElementById('toggle-sidebar-text');
+            if (tText) tText.textContent = "Sembunyikan Navigasi";
+
+            document.getElementById('exam-mapel-text').textContent = mapelName;
+            document.getElementById('exam-student-text').textContent = `${appState.currentUser.data.nama} (${appState.currentUser.data.nisn})`;
+
+            switchView('view-exam');
+            renderExamQuestion();
+            renderExamNavigationGrid();
+            startExamCountdown();
+
+            setTimeout(() => {
+                window.enableAntiCheat();
+            }, 500);
+        }
+
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function shuffleOptions(question) {
+            const optionsWithMetadata = question.opsi.map((opt, idx) => ({ 
+                text: opt, 
+                isCorrect: idx === question.jawaban_benar 
+            }));
+            
+            shuffleArray(optionsWithMetadata);
+            
+            const newOpsi = optionsWithMetadata.map(item => item.text);
+            const newJawabanBenar = optionsWithMetadata.findIndex(item => item.isCorrect);
+            
+            return {
+                ...question,
+                opsi: newOpsi,
+                jawaban_benar: newJawabanBenar
+            };
+        }
+
         window.prepareCbtExam = function(examId, mapelName, durationMin) {
             showCustomDialog("Konfirmasi Membuka", `Sesi pengerjaan ${mapelName} akan dimulai. Waktu pengerjaan sebesar ${durationMin} menit langsung dihitung mundur sejak tombol diklik.`, async () => {
                 const questions = await getRecords('questions', { field: 'id_ujian', value: examId });
@@ -2995,6 +3343,7 @@
                     return;
                 }
 
+                // Initializer state default ujian
                 appState.examEngine.activeExam = { id: examId, mapel: mapelName };
                 appState.examEngine.questions = questions;
                 appState.examEngine.answers = {};
@@ -3002,29 +3351,83 @@
                 appState.examEngine.currentIdx = 0;
                 appState.examEngine.timerVal = durationMin * 60;
                 appState.examEngine.fontSizePercent = 100; 
-                appState.examEngine.violations = 0; // Reset Pelanggaran
+                appState.examEngine.violations = 0;
 
                 await updateStudentStatus(appState.currentUser.data.nisn, 'working', examId);
 
-                const sidebar = document.getElementById('exam-nav-sidebar');
-                if (sidebar) sidebar.classList.remove('hidden');
-                const tText = document.getElementById('toggle-sidebar-text');
-                if (tText) tText.textContent = "Sembunyikan Navigasi";
+                // DETEKSI DAN PEMULIHAN SESI CADANGAN (FITUR 1)
+                try {
+                    const studentNisn = appState.currentUser.data.nisn;
+                    const progressRecords = await getRecords('exam_progress');
+                    const matchedProgress = progressRecords.find(r => r.nisn === studentNisn && r.examId === examId);
 
-                document.getElementById('exam-mapel-text').textContent = mapelName;
-                document.getElementById('exam-student-text').textContent = `${appState.currentUser.data.nama} (${appState.currentUser.data.nisn})`;
-
-                switchView('view-exam');
-                renderExamQuestion();
-                renderExamNavigationGrid();
-                startExamCountdown();
-
-                // Aktifkan Fitur Keamanan Anti Nyontek
-                setTimeout(() => {
-                    window.enableAntiCheat();
-                }, 500);
+                    if (matchedProgress) {
+                        showCustomDialog(
+                            "Pulihkan Jawaban?",
+                            "Kami mendeteksi sesi pengerjaan sebelumnya untuk ujian ini yang belum selesai. Apakah Anda ingin memulihkan semua jawaban dan sisa waktu terakhir Anda?",
+                            async () => {
+                                try {
+                                    appState.examEngine.answers = JSON.parse(matchedProgress.answers);
+                                } catch(e) { appState.examEngine.answers = {}; }
+                                try {
+                                    appState.examEngine.doubtful = JSON.parse(matchedProgress.doubtful);
+                                } catch(e) { appState.examEngine.doubtful = {}; }
+                                appState.examEngine.currentIdx = Number(matchedProgress.currentIdx) || 0;
+                                appState.examEngine.timerVal = Number(matchedProgress.timerVal);
+                                
+                                // FITUR 2: Ambil urutan acak yang sebelumnya disimpan agar konsisten
+                                if (matchedProgress.shuffledQuestions) {
+                                    appState.examEngine.questions = JSON.parse(matchedProgress.shuffledQuestions);
+                                }
+                                
+                                launchExamUI(mapelName);
+                            },
+                            "history"
+                        );
+                        
+                        // Menangani tombol Mulai Baru
+                        const cancelBtn = document.getElementById('dialog-cancel-btn');
+                        if (cancelBtn) {
+                            const freshCancelBtn = cancelBtn.cloneNode(true);
+                            freshCancelBtn.textContent = "Mulai Baru";
+                            cancelBtn.parentNode.replaceChild(freshCancelBtn, cancelBtn);
+                            freshCancelBtn.addEventListener('click', async () => {
+                                document.getElementById('custom-dialog').classList.add('hidden');
+                                await removeRecord('exam_progress', matchedProgress.id);
+                                
+                                // Mulai baru: Terapkan pengacakan (Fitur 2) jika diaktifkan
+                                applyFreshRandomization();
+                                launchExamUI(mapelName);
+                            });
+                        }
+                    } else {
+                        // Mulai baru secara normal
+                        applyFreshRandomization();
+                        launchExamUI(mapelName);
+                    }
+                } catch (err) {
+                    console.error("Gagal mendeteksi pemulihan progress:", err);
+                    applyFreshRandomization();
+                    launchExamUI(mapelName);
+                }
             }, "play");
         };
+
+        // Fungsi internal untuk memproses pengacakan fresh di sesi baru
+        function applyFreshRandomization() {
+            const engine = appState.examEngine;
+            const settings = appState.antiCheatSettings;
+
+            // 1. Acak Urutan Soal (Fisher-Yates)
+            if (settings.randomize_questions) {
+                shuffleArray(engine.questions);
+            }
+
+            // 2. Acak Urutan Pilihan Ganda tiap Soal
+            if (settings.randomize_options) {
+                engine.questions = engine.questions.map(q => shuffleOptions(q));
+            }
+        }
 
         function renderExamQuestion() {
             const engine = appState.examEngine;
@@ -3104,6 +3507,7 @@
             appState.examEngine.currentIdx = idx;
             renderExamQuestion();
             renderExamNavigationGrid();
+            window.saveExamProgress();
         };
 
         window.nextQuestion = function() {
@@ -3112,6 +3516,7 @@
                 engine.currentIdx++;
                 renderExamQuestion();
                 renderExamNavigationGrid();
+                window.saveExamProgress();
             } else {
                 showToast("Batas Akhir", "Anda berada di soal terakhir.", "info");
             }
@@ -3123,6 +3528,7 @@
                 engine.currentIdx--;
                 renderExamQuestion();
                 renderExamNavigationGrid();
+                window.saveExamProgress();
             } else {
                 showToast("Batas Awal", "Anda berada di soal pertama.", "info");
             }
@@ -3133,6 +3539,7 @@
             engine.answers[engine.currentIdx] = optionIndex;
             renderExamQuestion();
             renderExamNavigationGrid();
+            window.saveExamProgress();
         };
 
         window.toggleDoubtful = function() {
@@ -3140,9 +3547,9 @@
             engine.doubtful[engine.currentIdx] = !engine.doubtful[engine.currentIdx];
             renderExamQuestion();
             renderExamNavigationGrid();
+            window.saveExamProgress();
         };
 
-        // OPTIMASI: Menyederhanakan penentuan visibilitas sidebar ujian tanpa eksekusi data-lucide berulang-ulang
         window.toggleExamSidebar = function() {
             const sidebar = document.getElementById('exam-nav-sidebar');
             const text = document.getElementById('toggle-sidebar-text');
@@ -3200,6 +3607,10 @@
                 
                 timerDisplay.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 
+                if (appState.examEngine.timerVal > 0 && appState.examEngine.timerVal % 15 === 0) {
+                    window.saveExamProgress();
+                }
+
                 if (appState.examEngine.timerVal <= 0) {
                     clearInterval(appState.examEngine.timerId);
                     submitExamResults(true);
@@ -3221,7 +3632,6 @@
         async function submitExamResults(isForced = false) {
             clearInterval(appState.examEngine.timerId);
             
-            // Matikan pelacak anti-contek ketika ujian sudah dikirim
             window.disableAntiCheat();
 
             const engine = appState.examEngine;
@@ -3247,6 +3657,18 @@
             await createRecord('results', record);
             await updateStudentStatus(appState.currentUser.data.nisn, 'finished', engine.activeExam.id);
             
+            try {
+                const studentNisn = appState.currentUser.data.nisn;
+                const examId = engine.activeExam.id;
+                const progressRecords = await getRecords('exam_progress');
+                const matchedProgress = progressRecords.find(r => r.nisn === studentNisn && r.examId === examId);
+                if (matchedProgress) {
+                    await removeRecord('exam_progress', matchedProgress.id);
+                }
+            } catch (e) {
+                console.error("Gagal membersihkan backup progress:", e);
+            }
+
             if (isForced) {
                 if (engine.violations >= engine.maxViolations) {
                     showToast("Sanksi Keamanan", "Ujian dikirim paksa oleh sistem karena pelanggaran keamanan berulang.", "error");
